@@ -29,6 +29,8 @@ export class Store implements IStore {
 
     this._component = null;
     this._keys = Object.keys(initialData);
+
+    Object.seal(this);
   }
 
   connect(scope: IScope) {

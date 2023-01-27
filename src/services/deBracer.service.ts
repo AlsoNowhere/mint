@@ -8,7 +8,7 @@ export const deBracer = (text: string, scope: Object): string => {
     if (x.charAt(0) === "\\") return x.substring(1);
     const subStr = x.substring(1, x.length - 1);
     const value = (scope as any)[subStr];
-    const resolved = typeof value === "number" ? value.toString() : value;
-    return deBracer(resolved, scope);
+    const resolvedValue = typeof value === "number" ? value.toString() : value;
+    return deBracer(resolvedValue, scope);
   });
 };

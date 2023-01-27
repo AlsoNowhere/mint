@@ -2,7 +2,6 @@ import { addElement } from "../../services/addElement.service";
 
 import { renderAttributes } from "./attributes/renderAttributes.logic";
 import { renderTemplate } from "./renderTemplate.logic";
-import { addList } from "./mFor/addList.logic";
 
 import { Template } from "../../models/Template.model";
 import { IF_Template } from "../../models/IF_Template.model";
@@ -22,16 +21,6 @@ export const renderElementTemplate = (
   // console.log("DEV === RENDER ELEMENT: ", _template);
 
   if (_template.mIf !== undefined && _template.mIf.state === false) return;
-
-  // if (_template.mFor !== undefined) {
-  //   addList(
-  //     _template.mFor.currentForRenders,
-  //     templates,
-  //     rootElement,
-  //     templateIndex
-  //   );
-  //   return;
-  // }
 
   renderAttributes(_template.element, _template.attributes, _template.scope);
 
