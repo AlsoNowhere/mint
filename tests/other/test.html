@@ -1,0 +1,412 @@
+<!DOCTYPE html />
+<html lang="en-GB">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Mint app</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script src="../../dist/mint-experiment.js"></script>
+    <script>
+      (function () {
+        const root = document.getElementById("root");
+        const {
+          app,
+          component,
+          element,
+          getter,
+          refresh,
+          Store,
+          MintComponent,
+        } = mint;
+
+        // mFor Components
+        // const Lemon = component(
+        //   "li",
+        //   function Lemon() {
+        //     this.name = "Lemon";
+        //     getter(this, "index", function () {
+        //       return this._i + 1;
+        //     });
+        //   },
+        //   null,
+        //   "List item -- {_x} -- {_i} -- / -- {index}"
+        // );
+        // const Main = component(
+        //   "main",
+        //   function () {
+        //     this.list = ["Pop", "Under the weather", "A massive collapse"];
+        //   },
+        //   null,
+        //   [
+        //     element("ul", null, [
+        //       element("li", null, "One"),
+        //       element(Lemon, { "m-key": "_i", "m-for": "list" }),
+        //       element("li", null, "Three"),
+        //     ]),
+        //   ]
+        // );
+
+        // mFor Strings
+        // const Main = component(
+        //   "main",
+        //   function () {
+        //     this.list = ["Pop", "Under the weather", "A massive collapse"];
+        //   },
+        //   null,
+        //   [
+        //     element("ul", null, [
+        //       element("li", null, "One"),
+        //       element(
+        //         "li",
+        //         { "m-key": "_i", "m-for": "list" },
+        //         "Won't you check under here: {_x}"
+        //       ),
+        //       element("li", null, "Three"),
+        //     ]),
+        //   ]
+        // );
+
+        // mIf and mFor
+        // const Main = component(
+        //   "main",
+        //   function () {
+        //     this.case = false;
+        //     this.list = ["Pop", "Under the weather", "A massive collapse"];
+        //   },
+        //   null,
+        //   [
+        //     element("ul", null, [
+        //       element("li", null, "One"),
+        //       element(
+        //         "li",
+        //         { "m-key": "_i", "m-for": "list" },
+        //         "Won't you check under here: {_x}"
+        //       ),
+        //       element("li", { "m-if": "case" }, "Not here -- Spooky"),
+        //       element("li", null, "Three"),
+        //     ]),
+        //   ]
+        // );
+
+        // Refresh button
+        // const Main = component(
+        //   "main",
+        //   function Main() {
+        //     this.className = "card_under";
+        //     this.test = "One";
+        //     this.content = "Something to see here!";
+        //     this.update = function () {
+        //       console.log("Update: ", this);
+        //       this.content = "We've made a few... changes!";
+        //       this.test = "Two";
+        //       refresh(this);
+        //     };
+        //   },
+        //   null,
+        //   [
+        //     element(
+        //       "div",
+        //       { class: "main {className}", "[data-test]": "test" },
+        //       "Content -- {content}"
+        //     ),
+        //     element(
+        //       "button",
+        //       { type: "button", "(click)": "update" },
+        //       "Click this sausage!"
+        //     ),
+        //   ]
+        // );
+
+        // mIf Refresh
+        // const Main = component(
+        //   "main",
+        //   function Main() {
+        //     this.case = false;
+        //     this.update = function () {
+        //       this.case = !this.case;
+        //       refresh(this);
+        //     };
+        //   },
+        //   null,
+        //   [
+        //     element("div", null, "Zero"),
+        //     element("div", { "m-if": "case" }, "One"),
+        //     element("div", null, "Two"),
+        //     element(
+        //       "button",
+        //       { type: "button", "(click)": "update" },
+        //       "Click this sausage!"
+        //     ),
+        //   ]
+        // );
+
+        // mIf Refresh --- Component
+        // const Lemon = component("div", null, null, "Lemon");
+        // const Plum = component("div", null, null, "Plum");
+        // const Main = component(
+        //   "main",
+        //   function Main() {
+        //     this.case = false;
+        //     this.update = function () {
+        //       this.case = !this.case;
+        //       refresh(this);
+        //     };
+        //   },
+        //   null,
+        //   [
+        //     element("div", null, "Zero"),
+        //     element(Lemon, { "m-if": "case" }),
+        //     element(Plum, { "m-if": "case" }),
+        //     element("div", null, "Two"),
+        //     element(
+        //       "button",
+        //       { type: "button", "(click)": "update" },
+        //       "Click this sausage!"
+        //     ),
+        //   ]
+        // );
+
+        // mFor Refresh
+        // const Main = component(
+        //   "main",
+        //   function Main() {
+        //     this.i = 0;
+        //     this.list = ["One", "Two", "Three", "Four"];
+        //     this.update = function () {
+        //       // this.list.push("Two " + ++this.i);
+        //       this.list.pop();
+        //       refresh(this);
+        //     };
+        //   },
+        //   null,
+        //   [
+        //     element("div", null, "Zero"),
+        //     element("div", { "m-for": "list", "m-key": "_x" }, "List: {_x}"),
+        //     element("div", null, "Two"),
+        //     element(
+        //       "button",
+        //       { type: "button", "(click)": "update" },
+        //       "Click this sausage!"
+        //     ),
+        //   ]
+        // );
+
+        // mFor Refresh --- Component
+        // const Orange = component("div", null, null, "Orange {_x} {_i}");
+        // const Main = component(
+        //   "main",
+        //   function Main() {
+        //     this.i = 0;
+        //     this.list = ["One", "Two", "Three", "Four"];
+        //     this.update = function () {
+        //       // this.list.push("Two " + ++this.i);
+        //       // this.list.pop();
+        //       this.list.splice(1, 1);
+        //       refresh(this);
+        //     };
+        //   },
+        //   null,
+        //   [
+        //     element("div", null, "Zero"),
+        //     element(Orange, { "m-for": "list", "m-key": "_x" }),
+        //     element("div", null, "Two"),
+        //     element(
+        //       "button",
+        //       { type: "button", "(click)": "update" },
+        //       "Click this sausage!"
+        //     ),
+        //   ]
+        // );
+
+        // Store
+        // const lemonStore = new Store({
+        //   lemon: "juice",
+        //   run() {
+        //     lemonStore.lemon = "peel";
+        //     refresh(lemonStore);
+        //   },
+        // });
+        // const Lemon = component(
+        //   "li",
+        //   function Lemon() {
+        //     lemonStore.connect(this);
+        //   },
+        //   null,
+        //   [
+        //     "Lemon {lemon}",
+        //     element("button", { type: "button", "(click)": "run" }, "Click me"),
+        //   ]
+        // );
+        // const Main = component("main", null, null, element(Lemon));
+
+        // Other
+        // const content = "Plum";
+        // class BasicComponent extends MintComponent {
+        //   constructor() {
+        //     super();
+        //     this.test = content;
+        //   }
+        // }
+        // const Basic = component(
+        //   "div",
+        //   BasicComponent,
+        //   null,
+        //   "Component prop - {test}"
+        // );
+        // const Main = component("main", null, null, element(Basic));
+
+        // const rootData = ["One", "Two", "Three"];
+        // const Main = component(
+        //   "main",
+        //   function () {
+        //     this.list = [...rootData];
+        //     this.update = function () {
+        //       this.list.splice(1, 1);
+        //       refresh(this);
+        //     };
+        //   },
+        //   null,
+        //   [
+        //     element("div", { "m-for": "list", "m-key": "_x" }, "{_x}"),
+        //     element(
+        //       "button",
+        //       { type: "button", "(click)": "update" },
+        //       "Button update"
+        //     ),
+        //   ]
+        // );
+
+        // const data = {
+        //   list: ["One", "Two"],
+        //   run() {
+        //     console.log("Test me: ", this);
+        //   },
+        // };
+        // app(
+        //   document.body,
+        //   data,
+        //   element(
+        //     "div",
+        //     { "m-for": "list", "m-key": "_i", "(click)": "run" },
+        //     "{_x}"
+        //   )
+        // );
+        // const [div1, div2] = document.body.children;
+
+        // const Test = component(
+        //   "div",
+        //   function () {
+        //     this.test = "base";
+        //   },
+        //   null,
+        //   "Test -- {test}"
+        // );
+        // const Main = component(
+        //   "main",
+        //   function () {
+        //     this.test = "One";
+        //     this.update = function () {
+        //       this.test = "Two";
+        //       refresh(this);
+        //     };
+        //   },
+        //   null,
+        //   [
+        //     element(Test, { "[test]": "test" }),
+        //     element(
+        //       "button",
+        //       { type: "button", "(click)": "update" },
+        //       "Update"
+        //     ),
+        //   ]
+        // );
+
+        // const Modal = component("div", null, null, [
+        //   "_children",
+        //   element("span", null, "and other content"),
+        // ]);
+        // const Main = component(
+        //   "main",
+        //   null,
+        //   null,
+        //   element(
+        //     Modal,
+        //     null,
+        //     element("span", null, "Some other text")
+        //   )
+        // );
+
+        // // const Lemon = component("div", null, null, "Lemon");
+        // const Main = component(
+        //   "main",
+        //   function () {
+        //     this.case1 = false;
+        //     this.list = ["1", "2"];
+        //     this.update = function () {
+        //       this.case1 = !this.case1;
+        //       refresh(this);
+        //     };
+        //   },
+        //   null,
+        //   [
+        //     element(
+        //       "button",
+        //       { type: "button", "(click)": "update" },
+        //       "Update"
+        //     ),
+        //     element("p", null, "One"),
+        //     element("p", { "m-if": "case1" }, "Two"),
+        //     element("p", { "m-for": "list", "m-key": "_x" }, "{_x}"),
+        //     // element(Lemon),
+        //   ]
+        // );
+
+        const Lemon = component(
+          "span",
+          function Lemon() {},
+          { "[data-text]": "label" },
+          "Text {value} {label}"
+        );
+        const Main = component(
+          "div",
+          function () {
+            this.list = [13, 23].map((value) => ({
+              value,
+            }));
+          },
+          null,
+          [
+            element(Lemon, {
+              "m-for": "list",
+              "m-key": "_i",
+              label: "Something: {value}",
+            }),
+
+            // element(
+            //   "div",
+            //   {
+            //     "m-for": "list",
+            //     "m-key": "_i",
+            //   },
+            //   element(Lemon, { label: "Something: {x}", "[x]": "value" })
+            // ),
+
+            // element(
+            //   "div",
+            //   {
+            //     "m-for": "list",
+            //     "m-key": "_i",
+            //   },
+            //   "Something: {_x}"
+            // ),
+          ]
+        );
+
+        app(document.body, {}, element(Main));
+      })();
+    </script>
+  </body>
+</html>
