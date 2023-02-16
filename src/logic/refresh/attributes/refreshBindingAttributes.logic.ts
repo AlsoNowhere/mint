@@ -25,6 +25,8 @@ export const refreshBindingAttributes = (
       typeof newAttributeValue === "string"
         ? deBracer(newAttributeValue, scope)
         : newAttributeValue;
+
+    // ===
     /*
         For this specific case (setting value on <select> elements).
         The value property does not apply if the option for that value does not exist as a child of the select.
@@ -34,7 +36,9 @@ export const refreshBindingAttributes = (
       setTimeout(() => {
         (element as any)[target] = value;
       }, 0);
-    } else {
+    }
+    // ===
+    else if (value !== undefined) {
       (element as any)[target] = value;
     }
   } else {

@@ -14,6 +14,7 @@ import { IScope } from "../../interfaces/IScope.interface";
 import { I_mIf } from "../../interfaces/I_mIf.interface";
 import { I_mFor } from "../../interfaces/I_mFor.interface";
 import { I_mRef } from "../../interfaces/I_mRef.interface";
+import { I_mTemplate } from "../../interfaces/I_mTemplate.interface";
 
 import { TMintContent } from "../../types/TMintContent.type";
 
@@ -22,7 +23,12 @@ export const generateComponentTemplate = (
   parentTemplate: null | Template,
   rootScope: IScope & { __name?: "_ForData" },
   { isSVG, isMFor }: { isSVG: boolean; isMFor: boolean },
-  { mIf, mFor, mRef }: { mIf?: I_mIf; mFor?: I_mFor; mRef?: I_mRef }
+  {
+    mIf,
+    mFor,
+    mRef,
+    mTemplate,
+  }: { mIf?: I_mIf; mFor?: I_mFor; mRef?: I_mRef; mTemplate?: I_mTemplate }
 ) => {
   const _mintElement = mintElement as IComponent;
 
@@ -82,6 +88,7 @@ export const generateComponentTemplate = (
     mIf,
     mFor,
     mRef,
+    mTemplate,
     componentElement,
     attributes: cloneAttributes(_mintElement.component.mintElement),
     mintElement,

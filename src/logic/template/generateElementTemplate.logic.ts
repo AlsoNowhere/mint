@@ -17,11 +17,15 @@ export const generateElementTemplate = (
   parentTemplate: null | Template,
   rootScope: IScope,
   { isSVG }: { isSVG: boolean },
-  { mIf, mFor, mRef }: { mIf?: I_mIf; mFor?: I_mFor; mRef?: I_mRef }
+  {
+    mIf,
+    mFor,
+    mRef,
+    mTemplate,
+  }: { mIf?: I_mIf; mFor?: I_mFor; mRef?: I_mRef; mTemplate?: I_mTemplate }
 ) => {
   const _mintElement = mintElement as IElement;
 
-  let mTemplate: I_mTemplate | undefined;
   let content: Array<MintElement | string> | undefined = _mintElement.content;
 
   const element =
@@ -36,14 +40,6 @@ export const generateElementTemplate = (
 
   if (mRef) {
     (rootScope as any)[mRef.refValue] = element;
-  }
-
-  if (!!(_mintElement.attributes as any)["m-template"]) {
-    mTemplate = {
-      value: (_mintElement.attributes as any)["m-template"],
-    };
-    content = undefined;
-    delete (_mintElement.attributes as any)["m-template"];
   }
 
   /* Dev */

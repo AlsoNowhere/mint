@@ -1,11 +1,11 @@
 import { renderTextTemplate } from "./renderTextTemplate.logic";
 import { renderElementTemplate } from "./renderElementTemplate.logic";
 import { renderComponentTemplate } from "./renderComponentTemplate.logic";
+import { addList } from "./mFor/addList.logic";
 
 import { Template } from "../../models/Template.model";
 import { IF_Template } from "../../models/IF_Template.model";
 import { FOR_Template } from "../../models/FOR_Template.model";
-import { addList } from "./mFor/addList.logic";
 
 export const renderTemplate = (
   rootElement: HTMLElement | SVGElement,
