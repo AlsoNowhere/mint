@@ -1,3 +1,4 @@
 export interface I_mTemplate {
-  value: string;
+  target: string;
+  refreshOnEach: boolean;
 }

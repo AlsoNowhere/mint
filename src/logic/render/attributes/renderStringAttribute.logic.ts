@@ -6,11 +6,10 @@ export const renderStringAttribute = (
   value: string,
   scope: Object
 ) => {
-  const newAttributeValue = deBracer(value, scope);
-
-  if (typeof newAttributeValue === "boolean") {
-    (element as any)[key] = newAttributeValue;
+  if (typeof value === "boolean") {
+    (element as any)[key] = value;
   } else {
+    const newAttributeValue = deBracer(value, scope);
     element.setAttribute(key, newAttributeValue);
   }
 };

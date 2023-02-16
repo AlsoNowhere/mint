@@ -15,19 +15,22 @@ import { IScope } from "../../interfaces/IScope.interface";
 import { I_mFor } from "../../interfaces/I_mFor.interface";
 import { I_mIf } from "../../interfaces/I_mIf.interface";
 import { I_mRef } from "../../interfaces/I_mRef.interface";
+import { I_mTemplate } from "../../interfaces/I_mTemplate.interface";
 
 interface IAttributes {
   isSVG?: boolean;
   isMFor?: boolean;
+  mTemplate?: I_mTemplate;
 }
 
 export const generateTemplate = (
   mintElement: MintElement | MintTemplate | string,
   parentTemplate: null | Template,
   rootScope: IScope,
-  { isSVG = false, isMFor = false }: IAttributes = {
+  { isSVG = false, isMFor = false, mTemplate = undefined }: IAttributes = {
     isSVG: false,
     isMFor: false,
+    mTemplate: undefined,
   }
 ): Template | IF_Template | FOR_Template | string | undefined => {
   if (mintElement instanceof MintTemplate) {
@@ -36,6 +39,10 @@ export const generateTemplate = (
       return generateTemplate(content, parentTemplate, rootScope, {
         isSVG,
         isMFor,
+        mTemplate: {
+          target: mintElement.target,
+          refreshOnEach: mintElement.refreshOnEach,
+        },
       });
     }
     return undefined;
@@ -117,6 +124,7 @@ export const generateTemplate = (
         mIf,
         mFor,
         mRef,
+        mTemplate,
       }
     );
   }
@@ -126,7 +134,7 @@ export const generateTemplate = (
     parentTemplate,
     rootScope,
     { isSVG },
-    { mIf, mFor, mRef }
+    { mIf, mFor, mRef, mTemplate }
   );
 };
 

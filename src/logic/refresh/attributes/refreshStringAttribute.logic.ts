@@ -7,17 +7,20 @@ export const refreshStringAttribute = (
   scope: Object
 ) => {
   const oldAttributeValue = element.getAttribute(key);
-  const newAttributeValue = deBracer(value, scope);
 
-  if (oldAttributeValue === newAttributeValue) {
+  if (oldAttributeValue === value) {
     return;
   }
 
-  if (typeof newAttributeValue === "boolean") {
-    (element as any)[key] = newAttributeValue;
-  } else if (newAttributeValue === undefined) {
+  if (typeof value === "boolean") {
+    (element as any)[key] = value;
+  } else if (value === undefined) {
     element.removeAttribute(key);
   } else {
+    const newAttributeValue = deBracer(value, scope);
+    if (oldAttributeValue === newAttributeValue) {
+      return;
+    }
     element.setAttribute(key, newAttributeValue);
   }
 };

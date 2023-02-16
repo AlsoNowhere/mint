@@ -19,6 +19,8 @@ export const renderBindingAttributes = (
       typeof newAttributeValue === "string"
         ? deBracer(newAttributeValue, scope)
         : newAttributeValue;
+
+    // ===
     /*
         For this specific case (setting value on <select> elements).
         The value property does not apply if the option for that value does not exist as a child of the select.
@@ -28,10 +30,22 @@ export const renderBindingAttributes = (
       setTimeout(() => {
         (element as any)[target] = value;
       }, 0);
-    } else {
+    }
+    // ===
+    else if (value !== undefined) {
       (element as any)[target] = value;
     }
   } else if (newAttributeValue !== undefined && newAttributeValue !== false) {
-    element.setAttribute(target, deBracer(newAttributeValue, scope));
+    try {
+      element.setAttribute(target, deBracer(newAttributeValue, scope));
+    } catch (err) {
+      console.error(
+        "Error when applying binding attribute: ",
+        key,
+        value,
+        scope
+      );
+      throw err;
+    }
   }
 };
