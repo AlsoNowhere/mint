@@ -9,7 +9,11 @@ export const renderStringAttribute = (
   if (typeof value === "boolean") {
     (element as any)[key] = value;
   } else {
-    const newAttributeValue = deBracer(value, scope);
+    const newAttributeValue = deBracer(
+      value,
+      scope,
+      `Render - string attribute (${key}), (${value})`
+    );
     element.setAttribute(key, newAttributeValue);
   }
 };

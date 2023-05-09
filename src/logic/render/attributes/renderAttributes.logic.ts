@@ -27,7 +27,14 @@ export const renderAttributes = (
   scope: Object
 ) => {
   /* DEV */
-  // console.log("DEV === ATTRIBUTES: ", attributes, element, scope);
+  // console.log("DEV === RENDER === ATTRIBUTES: ", attributes, { element });
+
+  if ((attributes as any)["m-extend"] instanceof Object) {
+    Object.entries((attributes as any)["m-extend"]).forEach(([key, value]) => {
+      (attributes as any)[key] = value;
+    });
+    delete (attributes as any)["m-extend"];
+  }
 
   Object.entries(attributes).forEach(([key, value]) => {
     if (key === "mintElement_index") return;

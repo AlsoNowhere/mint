@@ -9,6 +9,7 @@ export { refresh } from "./logic/refresh/refresh.logic";
 
 export { Base as MintComponent } from "./models/Base.model";
 export { MintElement } from "./models/MintElement.model";
+export { UpwardRef } from "./models/UpwardRef.model";
 
 export { IStore } from "./interfaces/IStore.interface";
 export { IProps } from "./interfaces/IProps.interface";

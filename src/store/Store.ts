@@ -37,17 +37,22 @@ export class Store implements IStore {
     this._component = scope;
     scope._store = this;
 
-    let i = 0;
-    while (i < this._keys.length) {
-      const property = this._keys[i++];
-      (scope as any)[property] = (this as any)[property];
-      Object.defineProperty(scope, property, {
-        get: () => (this as any)[property],
-        set: (value) => {
-          (scope as any)[property] = value;
-          (this as any)[property] = value;
-        },
-      });
+    {
+      let i = 0;
+      while (i < this._keys.length) {
+        const property = this._keys[i++];
+        // (scope as any)[property] = (this as any)[property];
+        let _value = (this as any)[property];
+        Object.defineProperty(scope, property, {
+          get: () => (this as any)[property],
+          set: (value) => {
+            // console.log("Oop switch: ", scope, property, value);
+            _value = value;
+            // (scope as any)[property] = value;
+            (this as any)[property] = value;
+          },
+        });
+      }
     }
   }
 }

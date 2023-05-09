@@ -22,6 +22,9 @@ export const refreshAttributes = (
   attributes: Object,
   scope: Object
 ) => {
+  /* DEV */
+  // console.log("DEV === REFRESH === ATTRIBUTES: ", attributes, { element });
+
   Object.entries(attributes).forEach(([key, value]) => {
     if (key === "mintElement_index") return;
     setAttribute(element, key, value, scope);

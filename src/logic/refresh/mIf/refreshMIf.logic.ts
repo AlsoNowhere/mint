@@ -1,7 +1,7 @@
 import { addElement } from "../../../services/addElement.service";
 
-import { renderTemplate } from "../../render/renderTemplate.logic";
 import { generateTemplate } from "../../template/generateTemplate.logic";
+import { renderTemplate } from "../../render/renderTemplate.logic";
 
 import { Template } from "../../../models/Template.model";
 import { IF_Template } from "../../../models/IF_Template.model";
@@ -10,9 +10,13 @@ export const refreshMIf = (
   rootElement: HTMLElement | SVGElement,
   template: Template | IF_Template,
   templateIndex: number
-) => {
+): {
+  oldState?: boolean;
+  newState: boolean | undefined;
+} => {
   const { mIf, parentTemplate, scope, isComponent } = template;
-  if (mIf === undefined || parentTemplate === null) return;
+  if (mIf === undefined || parentTemplate === null)
+    return { newState: undefined };
 
   const oldState = mIf.state;
 
@@ -26,15 +30,16 @@ export const refreshMIf = (
   const newState = mIf.state;
 
   /* Dev */
-  // const states = { old: oldState, new: newState };
-  // console.log("DEV === REFRESH === mIf: ", rootElement, template, states);
+  // console.log("DEV === REFRESH === mIf: ", template, oldState, newState);
 
   if (oldState !== newState) {
-    // Was previously NOT rendered.
+    // Change in state -> Do something
     if (oldState === false) {
+      // WAS NOT previously rendered -> Add
       let newTemplate: Template = template as Template;
 
       if (mIf.templated === false) {
+        // WAS NOT previously templated -> Template first, then Add
         const _template = template as IF_Template;
 
         newTemplate = generateTemplate(
@@ -49,6 +54,7 @@ export const refreshMIf = (
         parentTemplate.templates.splice(templateIndex, 1, newTemplate);
 
         mIf.templated = true;
+
         rootElement !== undefined &&
           renderTemplate(
             rootElement,
@@ -56,8 +62,9 @@ export const refreshMIf = (
             parentTemplate.templates,
             templateIndex
           );
-        return false;
+        return { newState: false };
       } else {
+        // WAS previously templated -> Add back
         const _template = template as Template;
         const element = _template.componentElement || _template.element;
         element !== undefined &&
@@ -70,11 +77,11 @@ export const refreshMIf = (
           );
       }
     } else if (template instanceof Template) {
+      // WAS previously rendered -> Remove
       const element = template.element || template.componentElement;
-      // WAS previously rendered.
       element?.parentElement?.removeChild(element);
     }
   }
 
-  return newState;
+  return { oldState, newState };
 };

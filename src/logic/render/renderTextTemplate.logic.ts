@@ -14,5 +14,9 @@ export const renderTextTemplate = (
   /* Dev */
   // console.log("DEV === RENDER === TEXT NODE: ", _template.textValue, _template.scope);
 
-  _template.textNode.nodeValue = deBracer(_template.textValue, _template.scope);
+  _template.textNode.nodeValue = deBracer(
+    _template.textValue,
+    _template.scope,
+    "Render - textNode"
+  );
 };

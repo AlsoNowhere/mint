@@ -14,7 +14,8 @@ export const refreshTemplate = (
   rootElement: HTMLElement | SVGElement,
   template: Template | IF_Template | FOR_Template,
   templates: Array<Template | IF_Template>,
-  templateIndex: number
+  templateIndex: number,
+  { inserted }: { inserted: boolean }
 ) => {
   /* Dev */
   // console.log("DEV === REFRESH === Refresh template: ", template);
@@ -49,27 +50,31 @@ export const refreshTemplate = (
     return refreshTextNode(template);
   }
 
-  if (!(template instanceof FOR_Template) && template.mIf !== undefined) {
-    const newState = refreshMIf(rootElement, template, templateIndex);
+  if (
+    template instanceof IF_Template ||
+    (template instanceof Template && template.mIf !== undefined)
+  ) {
+    const { oldState, newState } = refreshMIf(
+      rootElement,
+      template,
+      templateIndex
+    );
     if (newState === false) return;
+    if (template.isComponent && oldState === false && newState === true) {
+      inserted = true;
+    }
   }
 
   if (template instanceof FOR_Template) {
-    refreshMFor(template, templates, templateIndex);
+    refreshMFor(template, templates, templateIndex, { inserted });
     return;
   }
 
-  if (
-    (template instanceof Template && template.element !== undefined) ||
-    (template instanceof IF_Template && !template.isComponent)
-  ) {
-    return refreshElementTemplate(template);
+  if (template instanceof Template && template.element !== undefined) {
+    return refreshElementTemplate(template, { inserted });
   }
 
-  if (
-    (template instanceof Template && template.component !== undefined) ||
-    (template instanceof IF_Template && template.isComponent)
-  ) {
-    return refreshComponentTemplate(template);
+  if (template instanceof Template && template.component !== undefined) {
+    return refreshComponentTemplate(template, { inserted });
   }
 };

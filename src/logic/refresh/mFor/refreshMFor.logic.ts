@@ -15,9 +15,10 @@ import { IForData } from "../../../interfaces/IForData.interface";
 export const refreshMFor = (
   template: FOR_Template,
   templates: Array<Template | IF_Template>,
-  templateIndex: number
+  templateIndex: number,
+  { inserted }: { inserted: boolean }
 ) => {
-  const { mFor, parentTemplate, scope, isComponent } = template;
+  const { mFor, parentTemplate, scope, isComponent, isSVG } = template;
   if (mFor === undefined || parentTemplate === null) return;
 
   const { forKey, currentForRenders } = mFor;
@@ -63,7 +64,7 @@ export const refreshMFor = (
       parentTemplate,
       checkScope,
       newCurrentForRenders,
-      isComponent
+      { isComponent, isSVG }
     );
 
     mFor.currentForRenders = templateList;
@@ -83,6 +84,8 @@ export const refreshMFor = (
   );
 
   mFor.currentForRenders.forEach((x) =>
-    x.isComponent ? refreshComponentTemplate(x) : refreshElementTemplate(x)
+    x.isComponent
+      ? refreshComponentTemplate(x, { inserted })
+      : refreshElementTemplate(x, { inserted })
   );
 };

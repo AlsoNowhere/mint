@@ -10,11 +10,12 @@ export const getWhereToInsert = (
   let i = templateIndex + 1;
   while (i < templates.length) {
     const template = templates[i++];
-    if (!(template instanceof Template)) continue;
-    if (template.mFor !== undefined) {
+    if (template instanceof IF_Template) continue;
+    const { mFor } = template;
+    if (mFor !== undefined) {
       let j = 0;
-      while (j < template.mFor.currentForRenders.length) {
-        const forTemplate = template.mFor.currentForRenders[j++];
+      while (j < mFor.currentForRenders.length) {
+        const forTemplate = mFor.currentForRenders[j++];
         const element = forTemplate.componentElement || forTemplate.element;
         if (element !== undefined && rootElement.contains(element)) {
           return element;
@@ -22,9 +23,11 @@ export const getWhereToInsert = (
       }
       continue;
     }
-    const element = template.componentElement || template.element;
-    if (element !== undefined && rootElement.contains(element)) {
-      return element;
+    if (template instanceof Template) {
+      const element = template.componentElement || template.element;
+      if (element !== undefined && rootElement.contains(element)) {
+        return element;
+      }
     }
   }
 };

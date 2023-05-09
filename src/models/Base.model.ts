@@ -6,6 +6,7 @@ import { IScope } from "../interfaces/IScope.interface";
 
 export class Base implements IScope {
   _store?: Store;
+  oninit?: Function;
   oninsert?: Function;
   oneach?: Function;
   onafterinsert?: Function;

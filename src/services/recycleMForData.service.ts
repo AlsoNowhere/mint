@@ -6,7 +6,11 @@ export const recycleMForData = (
   newIndex: number
 ) => {
   // Update the Object reference, only if the Object has changed
-  if (currentScope._x !== newData) currentScope._x = newData;
+  if (
+    Object.prototype.hasOwnProperty.apply(currentScope, ["_x"]) &&
+    currentScope._x !== newData
+  )
+    currentScope._x = newData;
 
   // Delete old values no longer on this new object;
   Object.keys(currentScope).forEach((key) => {

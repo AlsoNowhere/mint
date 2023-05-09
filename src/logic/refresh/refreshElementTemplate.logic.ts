@@ -6,7 +6,10 @@ import { IF_Template } from "../../models/IF_Template.model";
 
 import { IElementTemplate } from "../../interfaces/template/IElementTemplate.interface";
 
-export const refreshElementTemplate = (template: Template | IF_Template) => {
+export const refreshElementTemplate = (
+  template: Template | IF_Template,
+  { inserted }: { inserted: boolean }
+) => {
   /* Dev */
   // console.log("DEV === REFRESH === ELEMENT: ", template);
 
@@ -21,7 +24,8 @@ export const refreshElementTemplate = (template: Template | IF_Template) => {
         | SVGElement,
       x,
       _template.templates,
-      i
+      i,
+      { inserted }
     )
   );
 };

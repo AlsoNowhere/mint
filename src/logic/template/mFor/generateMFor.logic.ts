@@ -12,7 +12,10 @@ export const generateMFor = (
   mintElement: MintElement,
   scope: IScope,
   parentTemplate: null | Template,
-  isComponent = false
+  variants: {
+    isComponent?: boolean;
+    isSVG?: boolean;
+  } = { isComponent: false, isSVG: false }
 ): I_mFor => {
   const _forData = (scope as any)[forValue];
 
@@ -27,7 +30,7 @@ export const generateMFor = (
     parentTemplate,
     scope,
     forData,
-    isComponent
+    variants
   );
 
   return {
