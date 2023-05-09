@@ -23,7 +23,7 @@ export const refreshBindingAttributes = (
   } else if (attributesThatAreProperties.includes(target)) {
     const value =
       typeof newAttributeValue === "string"
-        ? deBracer(newAttributeValue, scope)
+        ? deBracer(newAttributeValue, scope, "Refresh - binding property")
         : newAttributeValue;
 
     // ===
@@ -42,6 +42,9 @@ export const refreshBindingAttributes = (
       (element as any)[target] = value;
     }
   } else {
-    element.setAttribute(target, deBracer(newAttributeValue, scope));
+    element.setAttribute(
+      target,
+      deBracer(newAttributeValue, scope, "Refresh - binding attribute")
+    );
   }
 };

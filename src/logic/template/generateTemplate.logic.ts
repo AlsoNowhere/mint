@@ -47,6 +47,7 @@ export const generateTemplate = (
     }
     return undefined;
   }
+
   if (mintElement === "_children") {
     return mintElement;
   }
@@ -58,6 +59,7 @@ export const generateTemplate = (
   let mIf: I_mIf | undefined;
   let mFor: I_mFor | undefined;
   let mRef: I_mRef | undefined;
+  let template: Template;
 
   const { attributes, props } = mintElement;
 
@@ -87,13 +89,14 @@ export const generateTemplate = (
     const forValue: string = (properties as any)["m-for"];
     delete ((attributes || props) as any)["m-for"];
     delete ((attributes || props) as any)["m-key"];
+    const isComponent = !!mintElement.component;
     mFor = generateMFor(
       forKey,
       forValue,
       mintElement,
       rootScope,
       parentTemplate,
-      !!mintElement.component
+      { isComponent, isSVG }
     );
     return new FOR_Template({
       mintElement,
@@ -101,7 +104,7 @@ export const generateTemplate = (
       scope: rootScope,
       isSVG,
       mFor,
-      isComponent: !!mintElement.component,
+      isComponent,
     });
   }
 
@@ -115,7 +118,7 @@ export const generateTemplate = (
   }
 
   if (mintElement.component instanceof MintComponent) {
-    return generateComponentTemplate(
+    template = generateComponentTemplate(
       mintElement,
       parentTemplate,
       rootScope,
@@ -127,15 +130,19 @@ export const generateTemplate = (
         mTemplate,
       }
     );
+  } else {
+    template = generateElementTemplate(
+      mintElement,
+      parentTemplate,
+      rootScope,
+      { isSVG },
+      { mIf, mFor, mRef, mTemplate }
+    );
   }
 
-  return generateElementTemplate(
-    mintElement,
-    parentTemplate,
-    rootScope,
-    { isSVG },
-    { mIf, mFor, mRef, mTemplate }
-  );
+  // console.log(" -- DEBUG -- Template: ", template);
+
+  return template;
 };
 
 export const generateTemplates = (

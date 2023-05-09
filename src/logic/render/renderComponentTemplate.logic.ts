@@ -2,7 +2,6 @@ import { addElement } from "../../services/addElement.service";
 
 import { renderAttributes } from "./attributes/renderAttributes.logic";
 import { renderTemplate } from "./renderTemplate.logic";
-import { addList } from "./mFor/addList.logic";
 
 import { Template } from "../../models/Template.model";
 import { IF_Template } from "../../models/IF_Template.model";
@@ -19,12 +18,13 @@ export const renderComponentTemplate = (
   /* Dev */
   // console.log("DEV === RENDER === COMPONENT: ", template);
 
-  const _template: IComponentTemplate = template as IComponentTemplate;
+  const _template = template as IComponentTemplate;
 
   if (_template.mIf !== undefined && _template.mIf.state === false) return;
 
-  template.scope.oninsert?.();
-  template.scope.oneach?.();
+  _template.scope.oninit?.();
+  _template.scope.oninsert?.();
+  _template.scope.oneach?.();
 
   renderAttributes(
     _template.componentElement,
@@ -38,7 +38,7 @@ export const renderComponentTemplate = (
     renderTemplate(_template.componentElement, x, _template.templates, i)
   );
 
-  template.scope.onafterinsert?.({ props: _template.props });
+  _template.scope.onafterinsert?.({ props: _template.props });
 
   return;
 };

@@ -17,7 +17,11 @@ export const refreshStringAttribute = (
   } else if (value === undefined) {
     element.removeAttribute(key);
   } else {
-    const newAttributeValue = deBracer(value, scope);
+    const newAttributeValue = deBracer(
+      value,
+      scope,
+      "Refresh - string attribute"
+    );
     if (oldAttributeValue === newAttributeValue) {
       return;
     }

@@ -11,6 +11,7 @@ import { I_mIf } from "../../interfaces/I_mIf.interface";
 import { I_mFor } from "../../interfaces/I_mFor.interface";
 import { I_mRef } from "../../interfaces/I_mRef.interface";
 import { I_mTemplate } from "../../interfaces/I_mTemplate.interface";
+import { UpwardRef } from "../../mint";
 
 export const generateElementTemplate = (
   mintElement: MintElement,
@@ -28,22 +29,26 @@ export const generateElementTemplate = (
 
   let content: Array<MintElement | string> | undefined = _mintElement.content;
 
-  const element =
-    _mintElement.element === "svg" || isSVG
-      ? document.createElementNS(
-          "http://www.w3.org/2000/svg",
-          _mintElement.element
-        )
-      : document.createElement(_mintElement.element);
-
   _mintElement.element === "svg" && (isSVG = true);
 
+  const element = isSVG
+    ? document.createElementNS(
+        "http://www.w3.org/2000/svg",
+        _mintElement.element
+      )
+    : document.createElement(_mintElement.element);
+
   if (mRef) {
-    (rootScope as any)[mRef.refValue] = element;
+    const value = (rootScope as any)[mRef.refValue];
+    if (value instanceof UpwardRef) {
+      value.ref = element;
+    } else {
+      (rootScope as any)[mRef.refValue] = element;
+    }
   }
 
   /* Dev */
-  // console.log("DEV === GENERATE === Element: ", _mintElement, element);
+  // console.log("DEV === GENERATE === Element: ", _mintElement);
 
   const template = new Template({
     element,

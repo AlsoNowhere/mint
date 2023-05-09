@@ -15,7 +15,7 @@ export const generateForTemplates = (
   parentTemplate: null | Template,
   parentScope: IScope,
   forData: Array<Template | Object | string | number>,
-  isComponent = false
+  { isComponent = false, isSVG = false }
 ): Array<Template> => {
   const component =
     mintElement.component instanceof Function
@@ -33,6 +33,7 @@ export const generateForTemplates = (
     const mintElementClone = mintElement.clone();
 
     const template = generateTemplate(mintElementClone, parentTemplate, scope, {
+      isSVG,
       isMFor: true,
     }) as Template;
 

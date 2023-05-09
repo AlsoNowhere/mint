@@ -8,7 +8,6 @@ import { Template } from "../models/Template.model";
 import { MintElement } from "../models/MintElement.model";
 
 import { IScope } from "../interfaces/IScope.interface";
-import { currentlyTemplating } from "../data/constants.data";
 
 export const app = (
   rootElement: HTMLElement,
@@ -24,13 +23,9 @@ export const app = (
     throw new Error(`Can only pass "_children" as child of Component.`);
   }
 
-  currentlyTemplating.state = true;
-
   (templates as Array<Template>).forEach((x: Template, i) =>
     renderTemplate(rootElement, x, templates as Array<Template>, i)
   );
-
-  currentlyTemplating.state = false;
 
   /* Dev */
   // console.log("DEV === APP === TEMPLATES: ", templates);

@@ -17,7 +17,7 @@ export const renderBindingAttributes = (
   } else if (attributesThatAreProperties.includes(target)) {
     const value =
       typeof newAttributeValue === "string"
-        ? deBracer(newAttributeValue, scope)
+        ? deBracer(newAttributeValue, scope, "Render - binding property")
         : newAttributeValue;
 
     // ===
@@ -36,16 +36,23 @@ export const renderBindingAttributes = (
       (element as any)[target] = value;
     }
   } else if (newAttributeValue !== undefined && newAttributeValue !== false) {
-    try {
-      element.setAttribute(target, deBracer(newAttributeValue, scope));
-    } catch (err) {
-      console.error(
-        "Error when applying binding attribute: ",
-        key,
-        value,
-        scope
-      );
-      throw err;
-    }
+    // try {
+    element.setAttribute(
+      target,
+      deBracer(
+        newAttributeValue,
+        scope,
+        `Render - binding attribute - (${target}), (${newAttributeValue})`
+      )
+    );
+    // } catch (err) {
+    //   console.error(
+    //     "Error when applying binding attribute: ",
+    //     key,
+    //     value,
+    //     scope
+    //   );
+    //   throw err;
+    // }
   }
 };

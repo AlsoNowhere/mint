@@ -1,13 +1,16 @@
 import { refreshAttributes } from "./attributes/refreshAttributes.logic";
 import { refreshTemplate } from "./refreshTemplate.logic";
+import { refreshProps } from "./component/refreshProps.logic";
 
 import { IF_Template } from "../../models/IF_Template.model";
 import { Template } from "../../models/Template.model";
 
 import { IComponentTemplate } from "../../interfaces/template/IComponentTemplate.interface";
-import { refreshProps } from "./component/refreshProps.logic";
 
-export const refreshComponentTemplate = (template: Template | IF_Template) => {
+export const refreshComponentTemplate = (
+  template: Template | IF_Template,
+  { inserted }: { inserted: boolean }
+) => {
   /* Dev */
   // console.log("DEV === REFRESH === COMPONENT: ", template);
 
@@ -20,6 +23,7 @@ export const refreshComponentTemplate = (template: Template | IF_Template) => {
   );
 
   template.scope.oneach?.();
+  inserted && template.scope.oninsert?.();
 
   refreshAttributes(
     _template.componentElement,
@@ -34,7 +38,8 @@ export const refreshComponentTemplate = (template: Template | IF_Template) => {
         | SVGElement,
       x,
       _template.templates,
-      i
+      i,
+      { inserted }
     )
   );
 };

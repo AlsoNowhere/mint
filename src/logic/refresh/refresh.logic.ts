@@ -1,12 +1,14 @@
 import { refreshTemplate } from "./refreshTemplate.logic";
 
+import { IF_Template } from "../../models/IF_Template.model";
 import { Template } from "../../models/Template.model";
 
 import { IScope } from "../../interfaces/IScope.interface";
 import { IStore } from "../../interfaces/IStore.interface";
-import { IF_Template } from "../../models/IF_Template.model";
 
-import { currentlyTemplating } from "../../data/constants.data";
+export const currentlyTemplating: Array<
+  IScope | IStore | Template | IF_Template
+> = [];
 
 const getTemplate = (scope: IScope): false | Template => {
   if (!(scope instanceof Object)) return false;
@@ -27,15 +29,23 @@ const getTemplate = (scope: IScope): false | Template => {
   return false;
 };
 
+let refresh_id = 0;
+
 export const refresh = (
   scopeOrTemplate: IScope | IStore | Template | IF_Template
 ) => {
-  if (currentlyTemplating.state) {
+  const id = refresh_id++;
+
+  // console.log(" -- DEBUG -- Refresh START", id);
+
+  if (currentlyTemplating.includes(scopeOrTemplate)) {
     console.warn(
       "WARNING: refresh() detected while still templating, refresh ignored."
     );
     return;
   }
+
+  currentlyTemplating.push(scopeOrTemplate);
 
   if (
     scopeOrTemplate instanceof Template ||
@@ -51,7 +61,8 @@ export const refresh = (
 
       scopeOrTemplate,
       template.parentTemplate?.templates,
-      template.parentTemplate?.templates.indexOf(template)
+      template.parentTemplate?.templates.indexOf(template),
+      { inserted: false }
     );
 
     return output;
@@ -66,7 +77,15 @@ export const refresh = (
         template.scope._mintTemplate?.element) as HTMLElement | SVGElement,
       x,
       template.templates,
-      i
+      i,
+      { inserted: false }
     );
   });
+
+  {
+    const index = currentlyTemplating.indexOf(scopeOrTemplate);
+    currentlyTemplating.splice(index, 1);
+  }
+
+  // console.log(" -- DEBUG -- Refresh END", id);
 };

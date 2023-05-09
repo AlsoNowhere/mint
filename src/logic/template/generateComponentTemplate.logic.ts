@@ -63,11 +63,11 @@ export const generateComponentTemplate = (
     const refValue = (attributes as any)["m-ref"];
     delete (attributes as any)["m-ref"];
     mRef = { refValue, scope };
-    (scope as any)[mRef.refValue] = componentElement;
+    (scope as any)[refValue] = componentElement;
   }
 
   /* Dev */
-  // console.log("DEV === GENERATE === COMPONENT: ", _mintElement);
+  // console.log("DEV === GENERATE === COMPONENT: ", _mintElement, scope);
 
   !mFor &&
     templateProps(scope, _mintElement.props, parentTemplate?.scope || {});
@@ -95,13 +95,9 @@ export const generateComponentTemplate = (
   });
 
   const componentContent = _mintElement.component.mintElement.content;
+  const content = componentContent.map((x: TMintContent) => cloneContent(x));
 
-  const templates = generateTemplates(
-    componentContent.map((x: TMintContent) => cloneContent(x)),
-    template,
-    scope,
-    isSVG
-  );
+  const templates = generateTemplates(content, template, scope, isSVG);
 
   template.templates = templates;
   template.templates = resolveChildren(template, templates);
