@@ -1,6 +1,18 @@
 import { deBracer } from "../../../services/deBracer.service";
+import { isWritable } from "../../../services/is-writable.service";
 
 import { attributesThatAreProperties } from "../../../data/attributesThatAreProperties.data";
+
+import { IScope } from "../../../interfaces/IScope.interface";
+
+const getValue = (value: string, scope: Object) => {
+  const writable = isWritable(value, scope as IScope);
+  const _value =
+    writable instanceof Function
+      ? writable.apply(scope)
+      : (scope as any)[value];
+  return _value;
+};
 
 export const renderBindingAttributes = (
   element: HTMLElement | SVGElement,
@@ -9,7 +21,7 @@ export const renderBindingAttributes = (
   scope: Object
 ): void => {
   const target = key.substring(1, key.length - 1);
-  const _value = (scope as any)[value];
+  const _value = getValue(value, scope);
   const newAttributeValue =
     _value instanceof Function ? _value.apply(scope) : _value;
   if (typeof newAttributeValue === "boolean") {
@@ -36,7 +48,6 @@ export const renderBindingAttributes = (
       (element as any)[target] = value;
     }
   } else if (newAttributeValue !== undefined && newAttributeValue !== false) {
-    // try {
     element.setAttribute(
       target,
       deBracer(
@@ -45,14 +56,5 @@ export const renderBindingAttributes = (
         `Render - binding attribute - (${target}), (${newAttributeValue})`
       )
     );
-    // } catch (err) {
-    //   console.error(
-    //     "Error when applying binding attribute: ",
-    //     key,
-    //     value,
-    //     scope
-    //   );
-    //   throw err;
-    // }
   }
 };

@@ -4,6 +4,7 @@ import { generateTemplates } from "./generateTemplate.logic";
 
 import { MintElement } from "../../models/MintElement.model";
 import { Template } from "../../models/Template.model";
+import { UpwardRef } from "../../models/UpwardRef.model";
 
 import { IElement } from "../../interfaces/mintElement/IElement.interface";
 import { IScope } from "../../interfaces/IScope.interface";
@@ -11,7 +12,6 @@ import { I_mIf } from "../../interfaces/I_mIf.interface";
 import { I_mFor } from "../../interfaces/I_mFor.interface";
 import { I_mRef } from "../../interfaces/I_mRef.interface";
 import { I_mTemplate } from "../../interfaces/I_mTemplate.interface";
-import { UpwardRef } from "../../mint";
 
 export const generateElementTemplate = (
   mintElement: MintElement,

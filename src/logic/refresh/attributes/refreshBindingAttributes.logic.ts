@@ -1,6 +1,18 @@
 import { deBracer } from "../../../services/deBracer.service";
+import { isWritable } from "../../../services/is-writable.service";
 
 import { attributesThatAreProperties } from "../../../data/attributesThatAreProperties.data";
+
+import { IScope } from "../../../interfaces/IScope.interface";
+
+const getValue = (value: string, scope: Object) => {
+  const writable = isWritable(value, scope as IScope);
+  const _value =
+    writable instanceof Function
+      ? writable.apply(scope)
+      : (scope as any)[value];
+  return _value;
+};
 
 export const refreshBindingAttributes = (
   element: HTMLElement | SVGElement,
@@ -10,7 +22,7 @@ export const refreshBindingAttributes = (
 ): void => {
   const target = key.substring(1, key.length - 1);
   const oldAttributeValue = element.getAttribute(target);
-  const _value = (scope as any)[value];
+  const _value = getValue(value, scope);
   const newAttributeValue =
     _value instanceof Function ? _value.apply(scope) : _value;
   if (oldAttributeValue === newAttributeValue) {
