@@ -14,6 +14,8 @@ export const app = (
   rootScope: IScope,
   content: MintElement | string | Array<MintElement | string>
 ) => {
+  const existingElements = Array.from(rootElement.children);
+
   const templates =
     content instanceof Array
       ? generateTemplates(content, null, rootScope)
@@ -26,6 +28,17 @@ export const app = (
   (templates as Array<Template>).forEach((x: Template, i) =>
     renderTemplate(rootElement, x, templates as Array<Template>, i)
   );
+
+  const deleteApp = () => {
+    Array.from(rootElement.children).forEach((x) => {
+      if (existingElements.includes(x)) return;
+      rootElement.removeChild(x);
+    });
+  };
+
+  return {
+    deleteApp,
+  };
 
   /* Dev */
   // console.log("DEV === APP === TEMPLATES: ", templates);

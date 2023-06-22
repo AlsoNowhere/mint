@@ -16,12 +16,13 @@ export const createForData = (
   index: number
 ): IForData => {
   const Data: any = function _ForData() {
+    this._parent = scope;
     this._i = index;
     this.__name = "_ForData";
   };
   Data.prototype = scope;
 
-  const newScope = new Data();
+  const newScope: IForData = new Data();
 
   if (data instanceof Object) {
     Object.entries(data).forEach(([key, value]) => {

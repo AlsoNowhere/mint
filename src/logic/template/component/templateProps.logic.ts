@@ -1,3 +1,5 @@
+import { isWritable } from "../../../services/is-writable.service";
+
 import { IScope } from "../../../interfaces/IScope.interface";
 
 const handleResolverProperties = (
@@ -6,14 +8,12 @@ const handleResolverProperties = (
   value: string,
   parentScope: IScope
 ) => {
-  const properties = Object.getOwnPropertyDescriptor(parentScope, value) as {
-    writable?: true;
-  };
-  if (properties !== undefined && properties.writable === undefined) {
+  const writable = isWritable(value, parentScope);
+  if (writable instanceof Function) {
     // If writable is undefined it means that this property is a getter, therefore created by the Resolver Object.
     // With that in mind we want to preserve this getter instead of just using the current value.
     Object.defineProperty(scope, key, {
-      get: () => (parentScope as any)[value],
+      get: writable,
       configurable: true,
     });
   } else {
@@ -33,8 +33,7 @@ const bindingTemplateProp = (
   }
   if (value === "_store") {
     (scope as any)[key] = parentScope._store;
-  }
-  if (value === "_scope") {
+  } else if (value === "_scope") {
     (scope as any)[key] = parentScope;
   }
 };

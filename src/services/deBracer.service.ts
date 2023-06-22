@@ -22,7 +22,8 @@ export const deBracer = (
     const subStr = x.substring(1, x.length - 1);
 
     // Get the value.
-    const value = (scope as any)[subStr];
+    const _value = (scope as any)[subStr];
+    const value = _value instanceof Function ? _value.apply(scope) : _value;
 
     // Get a resolved string only value.
     const resolvedValue = (() => {

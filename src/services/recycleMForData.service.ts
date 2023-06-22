@@ -14,7 +14,7 @@ export const recycleMForData = (
 
   // Delete old values no longer on this new object;
   Object.keys(currentScope).forEach((key) => {
-    if (key === "_i" || key === "_x") return;
+    if (key === "_parent" || key === "_i" || key === "_x") return;
 
     if (!Object.prototype.hasOwnProperty.apply(newData, [key]))
       delete (currentScope as any)[key];

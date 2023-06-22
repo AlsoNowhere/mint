@@ -1,5 +1,6 @@
-import { Template } from "../models/Template.model";
 import { Store } from "../store/Store";
+
+import { Template } from "../models/Template.model";
 
 export interface IScope {
   _store?: Store;
