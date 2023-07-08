@@ -4,6 +4,7 @@ import { addList } from "../../render/mFor/addList.logic";
 import { generateForTemplates } from "../../template/mFor/generateForTemplates.logic";
 import { refreshComponentTemplate } from "../refreshComponentTemplate.logic";
 import { refreshElementTemplate } from "../refreshElementTemplate.logic";
+import { refreshTemplate } from "../refreshTemplate.logic";
 
 import { IF_Template } from "../../../models/IF_Template.model";
 import { Template } from "../../../models/Template.model";
@@ -11,6 +12,8 @@ import { MintElement } from "../../../models/MintElement.model";
 import { FOR_Template } from "../../../models/FOR_Template.model";
 
 import { IForData } from "../../../interfaces/IForData.interface";
+
+import { TElement } from "../../../types/TElement.type";
 
 export const refreshMFor = (
   template: FOR_Template,
@@ -72,20 +75,27 @@ export const refreshMFor = (
     addList(
       templateList,
       templates,
-      (parentTemplate.componentElement || parentTemplate.element) as
-        | HTMLElement
-        | SVGElement,
+      (parentTemplate.componentElement || parentTemplate.element) as TElement,
       templateIndex
     );
   }
 
-  mFor.currentForRenders.forEach((x, i) =>
-    recycleMForData(x.scope as IForData, newList[i], i)
+  mFor.currentForRenders.forEach(({ scope }, i) =>
+    recycleMForData(scope as IForData, newList[i], i)
   );
 
-  mFor.currentForRenders.forEach((x) =>
-    x.isComponent
-      ? refreshComponentTemplate(x, { inserted })
-      : refreshElementTemplate(x, { inserted })
-  );
+  mFor.currentForRenders.forEach((x) => {
+    // console.log("For render: ", x);
+
+    const { isComponent, templates } = x;
+    const _i = { inserted };
+    isComponent
+      ? refreshComponentTemplate(x, _i)
+      : refreshElementTemplate(x, _i);
+    templates.forEach((y, i) => {
+      const pt = y.parentTemplate;
+      const type = pt?.componentElement || pt?.element;
+      refreshTemplate(type as TElement, y, templates, i, _i);
+    });
+  });
 };

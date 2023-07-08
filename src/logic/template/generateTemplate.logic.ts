@@ -17,6 +17,8 @@ import { I_mIf } from "../../interfaces/I_mIf.interface";
 import { I_mRef } from "../../interfaces/I_mRef.interface";
 import { I_mTemplate } from "../../interfaces/I_mTemplate.interface";
 
+import { TMintContent } from "../../types/TMintContent.type";
+
 interface IAttributes {
   isSVG?: boolean;
   isMFor?: boolean;
@@ -24,7 +26,7 @@ interface IAttributes {
 }
 
 export const generateTemplate = (
-  mintElement: MintElement | MintTemplate | string,
+  mintElement: TMintContent,
   parentTemplate: null | Template,
   rootScope: IScope,
   { isSVG = false, isMFor = false, mTemplate = undefined }: IAttributes = {
@@ -36,14 +38,20 @@ export const generateTemplate = (
   if (mintElement instanceof MintTemplate) {
     const content = (rootScope as any)[mintElement.target];
     if (content instanceof MintElement) {
-      return generateTemplate(content, parentTemplate, rootScope, {
+      const { target, refreshOnEach, replaceCondition } = mintElement;
+
+      const options = {
         isSVG,
         isMFor,
-        mTemplate: {
-          target: mintElement.target,
-          refreshOnEach: mintElement.refreshOnEach,
-        },
-      });
+        mTemplate: { target, refreshOnEach, replaceCondition },
+      };
+      const template = generateTemplate(
+        content,
+        parentTemplate,
+        rootScope,
+        options
+      );
+      return template;
     }
     return undefined;
   }
@@ -146,7 +154,7 @@ export const generateTemplate = (
 };
 
 export const generateTemplates = (
-  elements: Array<MintElement | string>,
+  elements: Array<TMintContent>,
   parentTemplate: null | Template,
   scope: IScope,
   isSVG = false

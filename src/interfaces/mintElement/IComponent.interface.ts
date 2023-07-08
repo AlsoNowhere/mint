@@ -1,9 +1,10 @@
 import { MintComponent } from "../../models/MintComponent.model";
-import { MintElement } from "../../models/MintElement.model";
+
+import { TMintContent } from "../../types/TMintContent.type";
 
 export interface IComponent {
   // component: MintComponent | (() => MintComponent);
   component: MintComponent;
   props: Object;
-  content: Array<MintElement | string>;
+  content: Array<TMintContent>;
 }

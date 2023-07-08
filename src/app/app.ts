@@ -36,10 +36,10 @@ export const app = (
     });
   };
 
+  /* Dev */
+  // console.log("DEV === APP === TEMPLATES: ", templates);
+
   return {
     deleteApp,
   };
-
-  /* Dev */
-  // console.log("DEV === APP === TEMPLATES: ", templates);
 };

@@ -16,11 +16,12 @@ export const refreshComponentTemplate = (
 
   const _template = template as IComponentTemplate;
 
-  refreshProps(
-    _template.scope,
-    _template.props,
-    _template.parentTemplate.scope
-  );
+  _template.parentTemplate &&
+    refreshProps(
+      _template.scope,
+      _template.props,
+      _template.parentTemplate.scope
+    );
 
   template.scope.oneach?.();
   inserted && template.scope.oninsert?.();
@@ -31,15 +32,15 @@ export const refreshComponentTemplate = (
     _template.scope
   );
 
-  _template.templates.forEach((x, i) =>
-    refreshTemplate(
-      (x.parentTemplate?.componentElement || x.parentTemplate?.element) as
-        | HTMLElement
-        | SVGElement,
-      x,
-      _template.templates,
-      i,
-      { inserted }
-    )
-  );
+  // _template.templates.forEach((x, i) =>
+  //   refreshTemplate(
+  //     (x.parentTemplate?.componentElement || x.parentTemplate?.element) as
+  //       | HTMLElement
+  //       | SVGElement,
+  //     x,
+  //     _template.templates,
+  //     i,
+  //     { inserted }
+  //   )
+  // );
 };

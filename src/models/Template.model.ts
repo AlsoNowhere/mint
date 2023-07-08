@@ -115,11 +115,7 @@ export class Template implements ICommonArguments {
       this.mFor = mFor;
       this.mRef = mRef;
       this.mTemplate = mTemplate;
-    } else if (
-      component instanceof MintComponent
-      // ||
-      // component instanceof Function
-    ) {
+    } else if (component instanceof MintComponent) {
       this.component = component;
       this.content = content as null | Array<Template>;
       this.props = props as Object;
@@ -127,6 +123,7 @@ export class Template implements ICommonArguments {
       this.mIf = mIf;
       this.mFor = mFor;
       this.mRef = mRef;
+      this.mTemplate = mTemplate;
       this.componentElement = componentElement;
       this.attributes = attributes as Object;
     }

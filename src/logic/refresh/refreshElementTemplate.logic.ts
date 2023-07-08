@@ -17,15 +17,15 @@ export const refreshElementTemplate = (
 
   refreshAttributes(_template.element, _template.attributes, _template.scope);
 
-  _template.templates.forEach((x, i) =>
-    refreshTemplate(
-      (x.parentTemplate?.componentElement || x.parentTemplate?.element) as
-        | HTMLElement
-        | SVGElement,
-      x,
-      _template.templates,
-      i,
-      { inserted }
-    )
-  );
+  // _template.templates.forEach((x, i) =>
+  //   refreshTemplate(
+  //     (x.parentTemplate?.componentElement || x.parentTemplate?.element) as
+  //       | HTMLElement
+  //       | SVGElement,
+  //     x,
+  //     _template.templates,
+  //     i,
+  //     { inserted }
+  //   )
+  // );
 };
