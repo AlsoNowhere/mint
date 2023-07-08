@@ -10,6 +10,11 @@ import { Template } from "../../models/Template.model";
 import { IF_Template } from "../../models/IF_Template.model";
 import { FOR_Template } from "../../models/FOR_Template.model";
 
+import { IComponentTemplate } from "../../interfaces/template/IComponentTemplate.interface";
+import { IElementTemplate } from "../../interfaces/template/IElementTemplate.interface";
+
+import { TElement } from "../../types/TElement.type";
+
 export const refreshTemplate = (
   rootElement: HTMLElement | SVGElement,
   template: Template | IF_Template | FOR_Template,
@@ -25,25 +30,43 @@ export const refreshTemplate = (
     template.mTemplate !== undefined &&
     template.mTemplate.refreshOnEach
   ) {
-    const content = (template.scope as any)[template.mTemplate.target];
-    const newTemplate = generateTemplate(
-      content,
-      template.parentTemplate,
-      template.scope,
-      { mTemplate: template.mTemplate }
-    );
+    const replace = template.mTemplate.replaceCondition?.() ?? false;
 
-    template.element?.parentElement?.removeChild(template.element);
+    if (replace) {
+      if (template.parentTemplate === null) return;
+      const { mTemplate } = template;
 
-    templates.splice(templateIndex, 1, newTemplate as Template);
+      const content =
+        (template.scope as any)[template.mTemplate.target] ||
+        (template.parentTemplate.scope as any)[template.mTemplate.target];
 
-    renderTemplate(
-      rootElement,
-      newTemplate as Template,
-      templates,
-      templateIndex
-    );
-    return;
+      const newTemplate = generateTemplate(
+        content,
+        template.parentTemplate,
+        template.scope,
+        { mTemplate }
+      );
+
+      const isComponent = !!template.componentElement;
+
+      if (isComponent) {
+        template.componentElement?.parentElement?.removeChild(
+          template.componentElement
+        );
+      } else {
+        template.element?.parentElement?.removeChild(template.element);
+      }
+
+      templates.splice(templateIndex, 1, newTemplate as Template);
+
+      renderTemplate(
+        rootElement,
+        newTemplate as Template,
+        templates,
+        templateIndex
+      );
+      return;
+    }
   }
 
   if (template instanceof Template && template.textNode !== undefined) {
@@ -70,11 +93,25 @@ export const refreshTemplate = (
     return;
   }
 
-  if (template instanceof Template && template.element !== undefined) {
-    return refreshElementTemplate(template, { inserted });
-  }
+  {
+    const _template = template as IElementTemplate | IComponentTemplate;
 
-  if (template instanceof Template && template.component !== undefined) {
-    return refreshComponentTemplate(template, { inserted });
+    if (template instanceof Template && template.element !== undefined) {
+      refreshElementTemplate(template, { inserted });
+    }
+
+    if (template instanceof Template && template.component !== undefined) {
+      refreshComponentTemplate(template, { inserted });
+    }
+
+    _template.templates.forEach((x, i) => {
+      const target =
+        x.parentTemplate?.componentElement || x.parentTemplate?.element;
+      refreshTemplate(target as TElement, x, _template.templates, i, {
+        inserted,
+      });
+    });
+
+    return;
   }
 };

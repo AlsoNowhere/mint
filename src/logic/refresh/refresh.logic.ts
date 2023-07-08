@@ -29,14 +29,17 @@ const getTemplate = (scope: IScope): false | Template => {
   return false;
 };
 
-let refresh_id = 0;
+// let refresh_id = 0;
 
 export const refresh = (
   scopeOrTemplate: IScope | IStore | Template | IF_Template
 ) => {
-  const id = refresh_id++;
-
+  // {
+  // const id = refresh_id++;
   // console.log(" -- DEBUG -- Refresh START", id);
+  // }
+
+  // console.log("Refresh: ", scopeOrTemplate);
 
   if (currentlyTemplating.includes(scopeOrTemplate)) {
     console.warn(
@@ -55,35 +58,47 @@ export const refresh = (
 
     if (template.parentTemplate === null) return;
 
-    const output = refreshTemplate(
+    // const output =
+    refreshTemplate(
       (template.scope._mintTemplate?.componentElement ||
         template.scope._mintTemplate?.element) as HTMLElement | SVGElement,
-
       scopeOrTemplate,
       template.parentTemplate?.templates,
       template.parentTemplate?.templates.indexOf(template),
       { inserted: false }
     );
 
-    return output;
+    // return output;
+    return;
   }
-  const template = getTemplate(scopeOrTemplate);
 
+  const scope: IScope = scopeOrTemplate;
+  const template = getTemplate(scope);
   if (template === false) return;
 
-  template.templates.forEach((x, i) => {
-    refreshTemplate(
-      (template.scope._mintTemplate?.componentElement ||
-        template.scope._mintTemplate?.element) as HTMLElement | SVGElement,
-      x,
-      template.templates,
-      i,
-      { inserted: false }
-    );
-  });
+  // console.log("Load upda teh refgresh: ", scope, template);
+
+  // template.templates.forEach((x, i) => {
+  //   refreshTemplate(
+  //     (template.scope._mintTemplate?.componentElement ||
+  //       template.scope._mintTemplate?.element) as HTMLElement | SVGElement,
+  //     x,
+  //     template.templates,
+  //     i,
+  //     { inserted: false }
+  //   );
+  // });
+
+  refreshTemplate(
+    (template.componentElement || template.element) as HTMLElement | SVGElement,
+    template,
+    template.parentTemplate?.templates ?? [],
+    template.parentTemplate?.templates.indexOf(template) || -1,
+    { inserted: false }
+  );
 
   {
-    const index = currentlyTemplating.indexOf(scopeOrTemplate);
+    const index = currentlyTemplating.indexOf(scope);
     currentlyTemplating.splice(index, 1);
   }
 

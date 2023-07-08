@@ -18,7 +18,7 @@ export { IForData } from "./interfaces/IForData.interface";
 
 export { Resolver, Store } from "./store/Store";
 
-export { settings } from "./data/variables.data";
+// export { settings } from "./data/variables.data";
 
 export { MintEvent } from "./types/MintEvent.type";
 export { lifecycle } from "./types/lifecycle.type";
