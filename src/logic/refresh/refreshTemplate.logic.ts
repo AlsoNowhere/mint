@@ -30,7 +30,16 @@ export const refreshTemplate = (
     template.mTemplate !== undefined &&
     template.mTemplate.refreshOnEach
   ) {
-    const replace = template.mTemplate.replaceCondition?.() ?? false;
+    const replace =
+      template.mTemplate.replaceCondition?.() ??
+      template.mTemplate.refreshOnEach;
+
+    /* Dev */
+    // console.log(
+    //   "DEV === REFRESH === Refresh MintTemplate: ",
+    //   template,
+    //   replace
+    // );
 
     if (replace) {
       if (template.parentTemplate === null) return;
