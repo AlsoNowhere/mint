@@ -14,6 +14,7 @@ import { FOR_Template } from "../../../models/FOR_Template.model";
 import { IForData } from "../../../interfaces/IForData.interface";
 
 import { TElement } from "../../../types/TElement.type";
+import { checkUniqueTemplates } from "../../../services/check-unique-templates.service";
 
 export const refreshMFor = (
   template: FOR_Template,
@@ -48,6 +49,18 @@ export const refreshMFor = (
         newCurrentForRenders.push(newCurrentRender || item);
         i++;
       }
+    }
+
+    if (
+      !checkUniqueTemplates(
+        newCurrentForRenders.filter(
+          (x) => x instanceof Template
+        ) as Array<Template>
+      )
+    ) {
+      console.warn(
+        "mFor -- duplicate elements detected. Only one instance will be rendered. Check m-key value."
+      );
     }
 
     currentForRenders.forEach((currentRender) => {
