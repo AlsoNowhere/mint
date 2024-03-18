@@ -1,8 +1,11 @@
+import { element } from "../../services/element.service";
+
 import { generateComponentTemplate } from "./generateComponentTemplate.logic";
 import { generateTextTemplate } from "./generateTextTemplate.logic";
 import { generateElementTemplate } from "./generateElementTemplate.logic";
 import { generateMIf } from "./mIf/generateMIf.logic";
 import { generateMFor } from "./mFor/generateMFor.logic";
+import { assignProps } from "../common/assign-props.logic";
 
 import { MintComponent } from "../../models/MintComponent.model";
 import { MintElement } from "../../models/MintElement.model";
@@ -10,6 +13,8 @@ import { MintTemplate } from "../../models/MintTemplate.model";
 import { Template } from "../../models/Template.model";
 import { IF_Template } from "../../models/IF_Template.model";
 import { FOR_Template } from "../../models/FOR_Template.model";
+import { Template_Template } from "../../models/Template_Template.model";
+import { Context } from "../../models/Context.model";
 
 import { IScope } from "../../interfaces/IScope.interface";
 import { I_mFor } from "../../interfaces/I_mFor.interface";
@@ -17,43 +22,98 @@ import { I_mIf } from "../../interfaces/I_mIf.interface";
 import { I_mRef } from "../../interfaces/I_mRef.interface";
 import { I_mTemplate } from "../../interfaces/I_mTemplate.interface";
 
+import { MINT_ERROR } from "../../data/constants.data";
+
 import { TMintContent } from "../../types/TMintContent.type";
+import { TContext } from "../../types/TContext.type";
+import { TFOR_Type } from "../../types/TFOR_Type.type";
 
 interface IAttributes {
   isSVG?: boolean;
   isMFor?: boolean;
   mTemplate?: I_mTemplate;
+  resolvedContext?: TContext;
 }
 
 export const generateTemplate = (
   mintElement: TMintContent,
   parentTemplate: null | Template,
   rootScope: IScope,
-  { isSVG = false, isMFor = false, mTemplate = undefined }: IAttributes = {
+  {
+    isSVG = false,
+    isMFor = false,
+    mTemplate = undefined,
+    resolvedContext = undefined,
+  }: IAttributes = {
     isSVG: false,
     isMFor: false,
     mTemplate: undefined,
+    resolvedContext: undefined,
   }
-): Template | IF_Template | FOR_Template | string | undefined => {
-  if (mintElement instanceof MintTemplate) {
-    const content = (rootScope as any)[mintElement.target];
-    if (content instanceof MintElement) {
-      const { target, refreshOnEach, replaceCondition } = mintElement;
-
-      const options = {
+):
+  | Template
+  | Template_Template
+  | IF_Template
+  | FOR_Template
+  | string
+  | undefined => {
+  if (mintElement instanceof Context) {
+    const _resolvedContext = {};
+    Object.assign(_resolvedContext, resolvedContext || ({} as TContext));
+    assignProps(_resolvedContext, mintElement.context, rootScope, "template");
+    const newElement = element(mintElement.element, null, mintElement.content);
+    return generateElementTemplate(
+      newElement,
+      parentTemplate,
+      rootScope,
+      {
         isSVG,
-        isMFor,
-        mTemplate: { target, refreshOnEach, replaceCondition },
-      };
-      const template = generateTemplate(
-        content,
-        parentTemplate,
-        rootScope,
-        options
+      },
+      {
+        resolvedContext: _resolvedContext,
+        context: mintElement,
+      }
+    );
+  }
+
+  if (mintElement instanceof MintTemplate) {
+    const mintTemplate = mintElement;
+    const content = (rootScope as any)[mintTemplate.target];
+    if (content instanceof Array) {
+      throw new Error(
+        `${MINT_ERROR} Template output was Array. Template output from template(target) can be MintElement only.`
       );
-      return template;
     }
-    return undefined;
+    if (
+      content !== undefined &&
+      !(content instanceof MintElement) &&
+      typeof content !== "string"
+    ) {
+      throw new Error(
+        `${MINT_ERROR} Template output not one of the following: undefined, MintElement, string`
+      );
+    }
+    if (content === undefined) {
+      return new Template_Template({
+        mintTemplate,
+        parentTemplate,
+        scope: rootScope,
+        isSVG,
+      });
+    }
+    const { target, refreshOnEach, replaceCondition } = mintTemplate;
+    const options = {
+      isSVG,
+      isMFor,
+      mTemplate: { target, refreshOnEach, replaceCondition },
+    };
+    const template = generateTemplate(
+      content,
+      parentTemplate,
+      rootScope,
+      options
+    );
+    return template;
   }
 
   if (mintElement === "_children") {
@@ -73,9 +133,11 @@ export const generateTemplate = (
 
   const properties = attributes || props;
 
-  if (!!(properties as any)["m-if"]) {
-    const ifValue: string = (properties as any)["m-if"];
-    delete ((attributes || props) as any)["m-if"];
+  if (!!(properties as any).mIf) {
+    const ifValue: string = (properties as any).mIf;
+
+    delete ((attributes || props) as any).mIf;
+
     mIf = generateMIf(mintElement, ifValue, rootScope);
     if (mIf.state === false)
       return new IF_Template({
@@ -88,15 +150,20 @@ export const generateTemplate = (
       });
   }
 
-  if (!!(properties as any)["m-for"]) {
-    const forKey: string = (properties as any)["m-key"];
+  if (!!(properties as any).mFor) {
+    const forKey: string = (properties as any).mKey;
 
-    if (forKey === undefined || forKey === "")
-      throw new Error("m-for must have a m-key attribute");
+    if (forKey === undefined || forKey === "") {
+      console.error(mintElement);
+      throw new Error(`${MINT_ERROR} mFor must have a mKey attribute`);
+    }
 
-    const forValue: string = (properties as any)["m-for"];
-    delete ((attributes || props) as any)["m-for"];
-    delete ((attributes || props) as any)["m-key"];
+    const forValue: string = (properties as any).mFor;
+    const mForType: TFOR_Type = (properties as any).mForType;
+    delete ((attributes || props) as any).mFor;
+    delete ((attributes || props) as any).mKey;
+    delete ((attributes || props) as any).mForType;
+
     const isComponent = !!mintElement.component;
     mFor = generateMFor(
       forKey,
@@ -104,7 +171,7 @@ export const generateTemplate = (
       mintElement,
       rootScope,
       parentTemplate,
-      { isComponent, isSVG }
+      { isComponent, mForType, isSVG }
     );
     return new FOR_Template({
       mintElement,
@@ -116,9 +183,9 @@ export const generateTemplate = (
     });
   }
 
-  if (!!(properties as any)["m-ref"]) {
-    const refValue = (properties as any)["m-ref"];
-    delete ((attributes || props) as any)["m-ref"];
+  if (!!(properties as any).mRef) {
+    const refValue = (properties as any).mRef;
+    delete ((attributes || props) as any).mRef;
     mRef = {
       refValue,
       scope: rootScope || parentTemplate?.scope,
@@ -136,6 +203,7 @@ export const generateTemplate = (
         mFor,
         mRef,
         mTemplate,
+        resolvedContext,
       }
     );
   } else {
@@ -144,22 +212,11 @@ export const generateTemplate = (
       parentTemplate,
       rootScope,
       { isSVG },
-      { mIf, mFor, mRef, mTemplate }
+      { mIf, mFor, mRef, mTemplate, resolvedContext }
     );
   }
 
-  // console.log(" -- DEBUG -- Template: ", template);
+  // console.log("DEV -- Template: ", template);
 
   return template;
-};
-
-export const generateTemplates = (
-  elements: Array<TMintContent>,
-  parentTemplate: null | Template,
-  scope: IScope,
-  isSVG = false
-): Array<Template> => {
-  return elements
-    .map((x) => generateTemplate(x, parentTemplate, scope, { isSVG }))
-    .filter((x) => !!x) as Array<Template>;
 };

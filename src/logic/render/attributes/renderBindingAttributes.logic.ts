@@ -1,9 +1,9 @@
 import { deBracer } from "../../../services/deBracer.service";
 import { isWritable } from "../../../services/is-writable.service";
 
-import { attributesThatAreProperties } from "../../../data/attributesThatAreProperties.data";
-
 import { IScope } from "../../../interfaces/IScope.interface";
+
+import { attributesThatAreProperties } from "../../../data/attributesThatAreProperties.data";
 
 const getValue = (value: string, scope: Object) => {
   const writable = isWritable(value, scope as IScope);
@@ -47,7 +47,11 @@ export const renderBindingAttributes = (
     else if (value !== undefined) {
       (element as any)[target] = value;
     }
-  } else if (newAttributeValue !== undefined && newAttributeValue !== false) {
+  } else if (
+    newAttributeValue !== undefined &&
+    newAttributeValue !== false &&
+    newAttributeValue !== null
+  ) {
     element.setAttribute(
       target,
       deBracer(

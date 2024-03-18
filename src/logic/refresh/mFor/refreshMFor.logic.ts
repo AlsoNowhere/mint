@@ -1,10 +1,12 @@
 import { recycleMForData } from "../../../services/recycleMForData.service";
+import { checkUnique } from "../../../services/check-unique.service";
 
 import { addList } from "../../render/mFor/addList.logic";
 import { generateForTemplates } from "../../template/mFor/generateForTemplates.logic";
 import { refreshComponentTemplate } from "../refreshComponentTemplate.logic";
 import { refreshElementTemplate } from "../refreshElementTemplate.logic";
 import { refreshTemplate } from "../refreshTemplate.logic";
+import { matchElements } from "./match-elements.logic";
 
 import { IF_Template } from "../../../models/IF_Template.model";
 import { Template } from "../../../models/Template.model";
@@ -13,8 +15,9 @@ import { FOR_Template } from "../../../models/FOR_Template.model";
 
 import { IForData } from "../../../interfaces/IForData.interface";
 
+import { MINT_ERROR } from "../../../data/constants.data";
+
 import { TElement } from "../../../types/TElement.type";
-import { checkUniqueTemplates } from "../../../services/check-unique-templates.service";
 
 export const refreshMFor = (
   template: FOR_Template,
@@ -28,8 +31,22 @@ export const refreshMFor = (
   const { forKey, currentForRenders } = mFor;
   const { oldForDataLength } = mFor;
   const checkScope = isComponent ? parentTemplate.scope : scope;
-  mFor.forData = (checkScope as any)[mFor.forValue];
-  const newList = mFor.forData;
+
+  const _forData = (checkScope as any)[mFor.forValue];
+  if (!(_forData instanceof Array) && _forData !== undefined) {
+    throw new Error(`${MINT_ERROR} Must pass in an Array or undefined to mFor`);
+  }
+  const forData = [..._forData].filter(checkUnique(forKey));
+
+  if (_forData.length !== forData.length) {
+    console.warn(
+      `mFor -- duplicate elements detected. Only one instance will be rendered. Check mKey value. ${forKey}`
+    );
+  }
+
+  mFor.forData = forData;
+  const newList = forData;
+  mFor.oldForDataLength = newList.length;
 
   /* Dev */
   // console.log("DEV === REFRESH === mFor: ", oldForDataLength, newList);
@@ -37,32 +54,27 @@ export const refreshMFor = (
   if (newList === undefined) return;
 
   if (oldForDataLength !== newList.length) {
+    // ** New list
     const newCurrentForRenders: Array<Template | Object | string | number> = [];
+
+    // ** Find if each new item already exists on current list of templates.
+    // ** If not then add the scope only.
     {
       let i = 0;
       while (i < newList.length) {
         const item = newList[i];
         const newCurrentRender = currentForRenders.find(({ scope }) => {
-          const key = (scope as any)[forKey];
-          return forKey === "_x" ? key === item : key === (item as any)[forKey];
+          const value = (scope as any)[forKey];
+          return forKey === "_x"
+            ? value === item
+            : value === (item as any)[forKey];
         });
         newCurrentForRenders.push(newCurrentRender || item);
         i++;
       }
     }
 
-    if (
-      !checkUniqueTemplates(
-        newCurrentForRenders.filter(
-          (x) => x instanceof Template
-        ) as Array<Template>
-      )
-    ) {
-      console.warn(
-        "mFor -- duplicate elements detected. Only one instance will be rendered. Check m-key value."
-      );
-    }
-
+    // ** Cycle through old list and if its not only the new list then remove this element.
     currentForRenders.forEach((currentRender) => {
       if (!newCurrentForRenders.includes(currentRender)) {
         const element = currentRender.isComponent
@@ -72,34 +84,42 @@ export const refreshMFor = (
       }
     });
 
-    mFor.forData = [...newList];
-    mFor.oldForDataLength = newList.length;
+    const rendersList = newCurrentForRenders.map((x, i) => {
+      if (x instanceof Template) {
+        return x;
+      }
+      return generateForTemplates(
+        template.mintElement as MintElement,
+        parentTemplate,
+        checkScope,
+        [x],
+        { isComponent, isSVG }
+      )[0];
+    });
 
-    const templateList = generateForTemplates(
-      template.mintElement as MintElement,
-      parentTemplate,
-      checkScope,
-      newCurrentForRenders,
-      { isComponent, isSVG }
-    );
-
-    mFor.currentForRenders = templateList;
+    mFor.currentForRenders = rendersList;
 
     addList(
-      templateList,
+      rendersList,
       templates,
       (parentTemplate.componentElement || parentTemplate.element) as TElement,
       templateIndex
     );
   }
 
-  mFor.currentForRenders.forEach(({ scope }, i) =>
-    recycleMForData(scope as IForData, newList[i], i)
-  );
+  if (mFor.mForType === "match") {
+    const oldList = [...mFor.currentForRenders];
+    matchElements(mFor.currentForRenders, oldList, newList, forKey);
+    mFor.currentForRenders.forEach(({ scope }, i) =>
+      recycleMForData(scope as IForData, newList[i], i)
+    );
+  } else {
+    mFor.currentForRenders.forEach(({ scope }, i) =>
+      recycleMForData(scope as IForData, newList[i], i)
+    );
+  }
 
   mFor.currentForRenders.forEach((x) => {
-    // console.log("For render: ", x);
-
     const { isComponent, templates } = x;
     const _i = { inserted };
     isComponent

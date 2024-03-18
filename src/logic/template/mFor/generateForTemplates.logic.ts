@@ -15,12 +15,19 @@ export const generateForTemplates = (
   parentTemplate: null | Template,
   parentScope: IScope,
   forData: Array<Template | Object | string | number>,
-  { isComponent = false, isSVG = false }
+  {
+    isComponent = false,
+    isSVG = false,
+  }: {
+    isComponent: boolean;
+    isSVG: boolean;
+  }
 ): Array<Template> => {
   const component =
     mintElement.component instanceof Function
       ? mintElement.component()
       : mintElement.component;
+
   const list: Array<Template> = forData.map((x: XType, index: number) => {
     if (x instanceof Template) return x;
 

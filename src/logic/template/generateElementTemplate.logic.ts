@@ -1,10 +1,11 @@
 import { resolveChildren } from "../../services/resolveChildren.service";
 
-import { generateTemplates } from "./generateTemplate.logic";
+import { generateTemplates } from "./generateTemplates.logic";
 
 import { MintElement } from "../../models/MintElement.model";
 import { Template } from "../../models/Template.model";
 import { UpwardRef } from "../../models/UpwardRef.model";
+import { Context } from "../../models/Context.model";
 
 import { IElement } from "../../interfaces/mintElement/IElement.interface";
 import { IScope } from "../../interfaces/IScope.interface";
@@ -12,6 +13,8 @@ import { I_mIf } from "../../interfaces/I_mIf.interface";
 import { I_mFor } from "../../interfaces/I_mFor.interface";
 import { I_mRef } from "../../interfaces/I_mRef.interface";
 import { I_mTemplate } from "../../interfaces/I_mTemplate.interface";
+
+import { TContext } from "../../types/TContext.type";
 
 export const generateElementTemplate = (
   mintElement: MintElement,
@@ -23,11 +26,20 @@ export const generateElementTemplate = (
     mFor,
     mRef,
     mTemplate,
-  }: { mIf?: I_mIf; mFor?: I_mFor; mRef?: I_mRef; mTemplate?: I_mTemplate }
+    resolvedContext,
+    context,
+  }: {
+    mIf?: I_mIf;
+    mFor?: I_mFor;
+    mRef?: I_mRef;
+    mTemplate?: I_mTemplate;
+    resolvedContext?: TContext;
+    context?: Context;
+  } = {}
 ) => {
   const _mintElement = mintElement as IElement;
 
-  let content: Array<MintElement | string> | undefined = _mintElement.content;
+  let content = _mintElement.content;
 
   _mintElement.element === "svg" && (isSVG = true);
 
@@ -60,10 +72,14 @@ export const generateElementTemplate = (
     mRef,
     mTemplate,
     mintElement,
+    context,
   });
 
   const templates = !!content
-    ? generateTemplates(content, template, rootScope, isSVG)
+    ? generateTemplates(content, template, rootScope, {
+        isSVG,
+        resolvedContext,
+      })
     : [];
   template.templates = templates;
   template.templates = resolveChildren(template, templates);

@@ -1,9 +1,10 @@
 import { deBracer } from "../../../services/deBracer.service";
 import { isWritable } from "../../../services/is-writable.service";
 
-import { attributesThatAreProperties } from "../../../data/attributesThatAreProperties.data";
-
 import { IScope } from "../../../interfaces/IScope.interface";
+
+import { attributesThatAreProperties } from "../../../data/attributesThatAreProperties.data";
+import { attributesThatAreBoolean } from "../../../data/attributesThatAreBoolean.data";
 
 const getValue = (value: string, scope: Object) => {
   const writable = isWritable(value, scope as IScope);
@@ -25,13 +26,13 @@ export const refreshBindingAttributes = (
   const _value = getValue(value, scope);
   const newAttributeValue =
     _value instanceof Function ? _value.apply(scope) : _value;
+
   if (oldAttributeValue === newAttributeValue) {
     return;
   }
+
   if (typeof newAttributeValue === "boolean") {
     (element as any)[target] = newAttributeValue;
-  } else if (newAttributeValue === undefined) {
-    element.removeAttribute(target);
   } else if (attributesThatAreProperties.includes(target)) {
     const value =
       typeof newAttributeValue === "string"
@@ -50,9 +51,21 @@ export const refreshBindingAttributes = (
       }, 0);
     }
     // ===
+    // ===
+    /*
+      For the case where the property needs to be set as a boolean but is not a boolean value
+      do that here.
+      For example setting checked on Input type checkbox.
+    */
+    else if (attributesThatAreBoolean.includes(target)) {
+      (element as any)[target] = !!value;
+    }
+    // ===
     else if (value !== undefined) {
       (element as any)[target] = value;
     }
+  } else if (newAttributeValue === undefined || newAttributeValue === null) {
+    element.removeAttribute(target);
   } else {
     element.setAttribute(
       target,

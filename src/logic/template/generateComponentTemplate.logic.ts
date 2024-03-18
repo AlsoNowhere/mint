@@ -2,8 +2,8 @@ import { resolveChildren } from "../../services/resolveChildren.service";
 import { cloneContent } from "../../services/cloneContent.service";
 import { cloneAttributes } from "../../services/cloneAttributes.service";
 
-import { generateTemplates } from "./generateTemplate.logic";
-import { templateProps } from "./component/templateProps.logic";
+import { assignProps } from "../common/assign-props.logic";
+import { generateTemplates } from "./generateTemplates.logic";
 
 import { MintElement } from "../../models/MintElement.model";
 import { Template } from "../../models/Template.model";
@@ -16,7 +16,9 @@ import { I_mFor } from "../../interfaces/I_mFor.interface";
 import { I_mRef } from "../../interfaces/I_mRef.interface";
 import { I_mTemplate } from "../../interfaces/I_mTemplate.interface";
 
-import { TMintContent } from "../../types/TMintContent.type";
+import { MINT_ERROR } from "../../data/constants.data";
+
+import { TContext } from "../../types/TContext.type";
 
 export const generateComponentTemplate = (
   mintElement: MintElement,
@@ -28,7 +30,14 @@ export const generateComponentTemplate = (
     mFor,
     mRef,
     mTemplate,
-  }: { mIf?: I_mIf; mFor?: I_mFor; mRef?: I_mRef; mTemplate?: I_mTemplate }
+    resolvedContext,
+  }: {
+    mIf?: I_mIf;
+    mFor?: I_mFor;
+    mRef?: I_mRef;
+    mTemplate?: I_mTemplate;
+    resolvedContext?: TContext;
+  }
 ) => {
   const _mintElement = mintElement as IComponent;
 
@@ -39,7 +48,7 @@ export const generateComponentTemplate = (
     _mintElement.component.scope !== null
   ) {
     throw new Error(
-      'Mint Component -- scope -- must pass a constructor function for Component scope argument (second argument) i.e component("div", function(){}'
+      `${MINT_ERROR} Mint Component -- scope -- must pass a constructor function for Component scope argument (second argument) i.e component("div", function(){}`
     );
   }
 
@@ -59,9 +68,9 @@ export const generateComponentTemplate = (
 
   if (mRef) {
     (scope as any)[mRef.refValue] = componentElement;
-  } else if ((attributes as any)["m-ref"]) {
-    const refValue = (attributes as any)["m-ref"];
-    delete (attributes as any)["m-ref"];
+  } else if (!!(attributes as any).mRef) {
+    const refValue = (attributes as any).mRef;
+    delete (attributes as any).mRef;
     mRef = { refValue, scope };
     (scope as any)[refValue] = componentElement;
   }
@@ -70,17 +79,26 @@ export const generateComponentTemplate = (
   // console.log("DEV === GENERATE === COMPONENT: ", _mintElement, scope);
 
   !mFor &&
-    templateProps(scope, _mintElement.props, parentTemplate?.scope || {});
+    assignProps(
+      scope,
+      _mintElement.props,
+      parentTemplate?.scope || rootScope || {},
+      "template"
+    );
+
+  Object.assign(scope, resolvedContext);
+
+  scope.onpretemplate?.();
 
   const mintElementContent = _mintElement.content;
 
   const template = new Template({
     component: _mintElement.component,
     content: generateTemplates(
-      mintElementContent.map((x: TMintContent) => cloneContent(x)),
+      mintElementContent.map(cloneContent),
       parentTemplate,
       scope,
-      isSVG
+      { isSVG, resolvedContext }
     ),
     props: _mintElement.props,
     scope,
@@ -95,9 +113,12 @@ export const generateComponentTemplate = (
   });
 
   const componentContent = _mintElement.component.mintElement.content;
-  const content = componentContent.map((x: TMintContent) => cloneContent(x));
+  const content = componentContent.map(cloneContent);
 
-  const templates = generateTemplates(content, template, scope, isSVG);
+  const templates = generateTemplates(content, template, scope, {
+    isSVG,
+    resolvedContext,
+  });
 
   template.templates = templates;
   template.templates = resolveChildren(template, templates);

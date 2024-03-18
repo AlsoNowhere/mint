@@ -1,6 +1,7 @@
 import { MintComponent } from "./MintComponent.model";
 import { IF_Template } from "./IF_Template.model";
 import { MintElement } from "./MintElement.model";
+import { Context } from "./Context.model";
 
 import { I_mRef } from "../interfaces/I_mRef.interface";
 import { IComponent } from "../interfaces/mintElement/IComponent.interface";
@@ -19,6 +20,7 @@ interface ICommonArguments {
 type TArguments = ICommonArguments &
   (
     | {
+        // TextNode
         element: Text;
         textValue: string;
         attributes?: never;
@@ -31,8 +33,10 @@ type TArguments = ICommonArguments &
         mTemplate?: never;
         componentElement?: never;
         mintElement: string;
+        context?: never;
       }
     | {
+        // HTMLElement
         element: SVGElement | HTMLElement | MintComponent;
         textValue?: never;
         attributes: Object;
@@ -45,11 +49,12 @@ type TArguments = ICommonArguments &
         mTemplate?: I_mTemplate;
         componentElement?: never;
         mintElement: MintElement;
+        context?: Context;
       }
     | {
+        // Component
         element?: never;
         textValue?: never;
-        // component: MintComponent | (() => MintComponent);
         component: MintComponent;
         content: null | Array<Template>;
         props: Object;
@@ -60,6 +65,7 @@ type TArguments = ICommonArguments &
         componentElement: SVGElement | HTMLElement;
         attributes: Object;
         mintElement: IComponent;
+        context?: Context;
       }
   );
 
@@ -69,7 +75,6 @@ export class Template implements ICommonArguments {
   element?: SVGElement | HTMLElement;
   attributes: Object;
   props: Object;
-  // component?: MintComponent | (() => MintComponent);
   component?: MintComponent;
   content: null | Array<Template>;
   isComponent: boolean;
@@ -82,6 +87,7 @@ export class Template implements ICommonArguments {
   mTemplate?: I_mTemplate;
   componentElement?: SVGElement | HTMLElement;
   mintElement: MintElement | string;
+  context?: Context;
 
   constructor({
     element,
@@ -99,6 +105,7 @@ export class Template implements ICommonArguments {
     mTemplate,
     componentElement,
     mintElement,
+    context,
   }: TArguments) {
     if (element instanceof Text) {
       this.textNode = element;
@@ -115,6 +122,7 @@ export class Template implements ICommonArguments {
       this.mFor = mFor;
       this.mRef = mRef;
       this.mTemplate = mTemplate;
+      this.context = context;
     } else if (component instanceof MintComponent) {
       this.component = component;
       this.content = content as null | Array<Template>;
@@ -126,6 +134,7 @@ export class Template implements ICommonArguments {
       this.mTemplate = mTemplate;
       this.componentElement = componentElement;
       this.attributes = attributes as Object;
+      this.context = context;
     }
     this.templates = templates;
     this.scope = scope;

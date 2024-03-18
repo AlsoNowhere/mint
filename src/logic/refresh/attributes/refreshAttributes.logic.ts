@@ -10,6 +10,10 @@ const setAttribute = (
   /* Dev */
   // console.log("DEV === REFRESH === SETATTRIBUTE: ", key, "|", value);
 
+  if (key.charAt(0) === "(" && key.slice(-1) === ")") {
+    console.error("Event handler attribute was present in refresh");
+    console.trace();
+  }
   if (key.charAt(0) === "[" && key.slice(-1) === "]") {
     refreshBindingAttributes(element, key, value, scope);
   } else {

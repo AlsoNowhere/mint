@@ -13,6 +13,6 @@ export const refreshTextNode = (template: Template) => {
   _template.textNode.nodeValue = deBracer(
     _template.textValue,
     _template.scope,
-    "Refres - textNode"
+    "Refresh - textNode"
   );
 };

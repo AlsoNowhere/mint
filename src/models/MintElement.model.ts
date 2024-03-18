@@ -36,9 +36,7 @@ export class MintElement {
     return new MintElement(
       element,
       cloneAttributes(this),
-      this.content instanceof Function
-        ? this.content
-        : this.content instanceof Array
+      this.content instanceof Array
         ? this.content.map((x) => cloneContent(x))
         : cloneContent(this.content)
     );

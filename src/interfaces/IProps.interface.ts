@@ -1,8 +1,12 @@
+import { IStore } from "./IStore.interface";
+
 export interface IProps {
-  "m-ref"?: string;
-  "m-if"?: string;
-  "m-for"?: string;
-  "m-key"?: string;
+  mRef?: string;
+  mIf?: string;
+  mFor?: string;
+  mKey?: string;
   "[scope]"?: string;
+  _store?: IStore;
+  "[_store]"?: string;
   ref?: string;
 }
