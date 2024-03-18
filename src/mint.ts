@@ -3,10 +3,11 @@ export { app } from "./app/app";
 export { component } from "./services/component.service";
 export { element } from "./services/element.service";
 export { template } from "./services/template.service";
-
-export { getter } from "./getter/getter";
+export { context } from "./services/context.service";
+export { span, div } from "./elements/elements";
 
 export { refresh } from "./logic/refresh/refresh.logic";
+export { getter } from "./getter/getter";
 
 export { Base as MintComponent } from "./models/Base.model";
 export { MintElement } from "./models/MintElement.model";

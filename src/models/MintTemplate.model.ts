@@ -13,7 +13,7 @@ export class MintTemplate implements I_mTemplate {
     { refreshOnEach, replaceCondition }: I_mTemplate_Options
   ) {
     this.target = target;
-    this.refreshOnEach = refreshOnEach || true;
+    this.refreshOnEach = refreshOnEach ?? true;
     this.replaceCondition = replaceCondition;
   }
 

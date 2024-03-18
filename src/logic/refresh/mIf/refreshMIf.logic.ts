@@ -1,3 +1,5 @@
+import { Resolver } from "../../../store/Store";
+
 import { addElement } from "../../../services/addElement.service";
 
 import { generateTemplate } from "../../template/generateTemplate.logic";
@@ -24,8 +26,9 @@ export const refreshMIf = (
 
   const checkScope = isComponent ? parentTemplate.scope : scope;
 
-  const state: boolean = (checkScope as any)[ifValue];
-  mIf.state = inverse ? !state : !!state;
+  const state: boolean | Resolver = (checkScope as any)[ifValue];
+  const result = state instanceof Resolver ? state.callback() : state;
+  mIf.state = inverse ? !result : !!result;
 
   const newState = mIf.state;
 
@@ -33,13 +36,13 @@ export const refreshMIf = (
   // console.log("DEV === REFRESH === mIf: ", template, oldState, newState);
 
   if (oldState !== newState) {
-    // Change in state -> Do something
+    // ** Change in state -> Do something
     if (oldState === false) {
-      // WAS NOT previously rendered -> Add
+      // ** WAS NOT previously rendered -> Add
       let newTemplate: Template = template as Template;
 
       if (mIf.templated === false) {
-        // WAS NOT previously templated -> Template first, then Add
+        // ** WAS NOT previously templated -> Template first, then Add
         const _template = template as IF_Template;
 
         newTemplate = generateTemplate(
@@ -64,7 +67,7 @@ export const refreshMIf = (
           );
         return { newState: false };
       } else {
-        // WAS previously templated -> Add back
+        // ** WAS previously templated -> Add back
         const _template = template as Template;
         const element = _template.componentElement || _template.element;
         element !== undefined &&
@@ -77,7 +80,7 @@ export const refreshMIf = (
           );
       }
     } else if (template instanceof Template) {
-      // WAS previously rendered -> Remove
+      // ** WAS previously rendered -> Remove
       const element = template.element || template.componentElement;
       element?.parentElement?.removeChild(element);
     }

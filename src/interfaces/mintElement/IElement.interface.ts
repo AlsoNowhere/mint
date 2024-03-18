@@ -1,7 +1,7 @@
-import { MintElement } from "../../models/MintElement.model";
+import { TMintContent } from "../../types/TMintContent.type";
 
 export interface IElement {
   element: string;
   attributes: Object;
-  content: Array<MintElement | string>;
+  content?: Array<TMintContent>;
 }

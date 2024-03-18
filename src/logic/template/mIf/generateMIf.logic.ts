@@ -1,3 +1,5 @@
+import { Resolver } from "../../../store/Store";
+
 import { MintElement } from "../../../models/MintElement.model";
 
 import { IScope } from "../../../interfaces/IScope.interface";
@@ -10,8 +12,10 @@ export const generateMIf = (
 ): I_mIf => {
   const inverse = _ifValue.charAt(0) === "!";
   const ifValue = inverse ? _ifValue.substring(1) : _ifValue;
-  const _state: boolean = (scope as any)[ifValue];
-  const state = inverse ? !_state : !!_state;
+  const _state: boolean | Resolver = (scope as any)[ifValue];
+  const result = _state instanceof Resolver ? _state.callback() : _state;
+  const state = inverse ? !result : !!result;
+
   return {
     inverse,
     ifValue,

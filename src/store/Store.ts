@@ -11,6 +11,7 @@ export class Resolver<T = any> {
 export class Store implements IStore {
   _component: IScope | null;
   _keys: Array<string>;
+  _data: any;
 
   constructor(initialData: Object) {
     if (!(initialData instanceof Object)) {
@@ -29,6 +30,7 @@ export class Store implements IStore {
 
     this._component = null;
     this._keys = Object.keys(initialData);
+    this._data = initialData;
 
     Object.seal(this);
   }
@@ -40,15 +42,19 @@ export class Store implements IStore {
     {
       let i = 0;
       while (i < this._keys.length) {
-        const property = this._keys[i++];
-        let _value = (this as any)[property];
-        Object.defineProperty(scope, property, {
-          get: () => (this as any)[property],
-          set: (value) => {
-            _value = value;
-            (this as any)[property] = value;
-          },
-        });
+        const key = this._keys[i];
+        const value = this._data[key];
+        if (value instanceof Resolver) {
+          Object.defineProperty(scope, key, {
+            get: (value as Resolver).callback,
+          });
+        } else {
+          Object.defineProperty(scope, key, {
+            get: () => (this as any)[key],
+            set: (_value) => ((this as any)[key] = _value),
+          });
+        }
+        i++;
       }
     }
   }

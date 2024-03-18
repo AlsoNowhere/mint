@@ -7,7 +7,7 @@ import { IScope } from "../../interfaces/IScope.interface";
 import { IStore } from "../../interfaces/IStore.interface";
 
 export const currentlyTemplating: Array<
-  IScope | IStore | Template | IF_Template
+  IScope | IStore | Template | IF_Template | number
 > = [];
 
 const getTemplate = (scope: IScope): false | Template => {
@@ -36,14 +36,20 @@ export const refresh = (
 ) => {
   // {
   // const id = refresh_id++;
-  // console.log(" -- DEBUG -- Refresh START", id);
+  // console.log("DEV -- Refresh START", id);
   // }
 
-  // console.log("Refresh: ", scopeOrTemplate);
+  // console.log("DEV === refresh === ", scopeOrTemplate);
+  // console.trace();
 
-  if (currentlyTemplating.includes(scopeOrTemplate)) {
+  const focusTarget = document.activeElement;
+
+  if (
+    currentlyTemplating.includes(scopeOrTemplate) ||
+    currentlyTemplating.includes(0)
+  ) {
     console.warn(
-      "WARNING: refresh() detected while still templating, refresh ignored."
+      "MINT WARNING: refresh() detected while still templating, refresh ignored."
     );
     return;
   }
@@ -58,7 +64,6 @@ export const refresh = (
 
     if (template.parentTemplate === null) return;
 
-    // const output =
     refreshTemplate(
       (template.scope._mintTemplate?.componentElement ||
         template.scope._mintTemplate?.element) as HTMLElement | SVGElement,
@@ -68,7 +73,6 @@ export const refresh = (
       { inserted: false }
     );
 
-    // return output;
     return;
   }
 
@@ -76,18 +80,7 @@ export const refresh = (
   const template = getTemplate(scope);
   if (template === false) return;
 
-  // console.log("Load upda teh refgresh: ", scope, template);
-
-  // template.templates.forEach((x, i) => {
-  //   refreshTemplate(
-  //     (template.scope._mintTemplate?.componentElement ||
-  //       template.scope._mintTemplate?.element) as HTMLElement | SVGElement,
-  //     x,
-  //     template.templates,
-  //     i,
-  //     { inserted: false }
-  //   );
-  // });
+  // console.log("DEV === refresh-template === ", template);
 
   refreshTemplate(
     (template.componentElement || template.element) as HTMLElement | SVGElement,
@@ -102,5 +95,13 @@ export const refresh = (
     currentlyTemplating.splice(index, 1);
   }
 
-  // console.log(" -- DEBUG -- Refresh END", id);
+  if (
+    focusTarget !== null &&
+    focusTarget !== document.activeElement &&
+    document.body.contains(focusTarget)
+  ) {
+    (focusTarget as HTMLElement).focus();
+  }
+
+  // console.log("DEV -- Refresh END", id);
 };

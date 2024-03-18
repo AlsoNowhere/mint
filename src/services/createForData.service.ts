@@ -2,7 +2,7 @@ import { IForData } from "../interfaces/IForData.interface";
 
 /*
   This is a very important Function.
-  When passing an Array of Objects to a "m-for" we need to go over the data of each
+  When passing an Array of Objects to a mFor we need to go over the data of each
   Object and add the parent scope into the data.
   We do this by creating a new Object and adding the parent scope as the prototype.
   Importantly we then define the for each data using Object.defineProperty
@@ -17,6 +17,7 @@ export const createForData = (
 ): IForData => {
   const Data: any = function _ForData() {
     this._parent = scope;
+    this._x = data;
     this._i = index;
     this.__name = "_ForData";
   };
@@ -27,18 +28,16 @@ export const createForData = (
   if (data instanceof Object) {
     Object.entries(data).forEach(([key, value]) => {
       Object.defineProperty(newScope, key, {
-        // Set the value
+        // ** Set the value
         value,
-        // Can it be edited
+        // ** Can it be edited
         writable: true,
-        // Will it be loopable e.g is shown in Object.entries
+        // ** Will it be loopable e.g is shown in Object.entries
         enumerable: true,
-        // Can it be deleted from this object
+        // ** Can it be deleted from this object
         configurable: true,
       });
     });
-  } else {
-    newScope._x = data;
   }
   return newScope;
 };
