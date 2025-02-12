@@ -1,0 +1,20 @@
+import { INode } from "../../interfaces/INode.interface";
+import { IProps } from "../../interfaces/IProps.interface";
+import { IMainScope } from "../../interfaces/IMainScope.interface";
+import { IRootScope } from "../../interfaces/IRootScope.interface";
+import { TElement } from "../../types/TElement.type";
+import { TParentBlueprint } from "../../types/TParentBlueprint.type";
+import { TShouldExit } from "../../types/TShouldExit.type";
+export declare const resolveMAttributesOnGenerate: ({ node, htmlElement, orderedProps, props, parentScope, scope, parentBlueprint, _rootScope, isSVG, isComponent, isAttribute, }: {
+    node: INode;
+    htmlElement: TElement | undefined;
+    orderedProps: Array<string>;
+    props: IProps;
+    parentScope: IMainScope;
+    scope: IMainScope;
+    parentBlueprint: TParentBlueprint | null;
+    _rootScope: IRootScope;
+    isSVG: boolean;
+    isComponent: boolean;
+    isAttribute: boolean;
+}) => TShouldExit;

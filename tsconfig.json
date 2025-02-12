@@ -1,20 +1,13 @@
 {
   "compilerOptions": {
-    "module": "es2015",
-    "lib": ["dom", "es2015", "es2017", "es2022"],
-    "target": "es2015",
-    "noImplicitAny": true,
-    "removeComments": true,
-    "preserveConstEnums": true,
-    "moduleResolution": "nodenext",
-    "typeRoots": ["./typings"],
-    "esModuleInterop": true,
-    "noEmit": false,
-    "strictNullChecks": true,
-    "outDir": "./dist",
+    "target": "ES6",
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true,
     "declaration": true,
-    "declarationDir": "./dist"
+    "outDir": "./dist",
+    "strictNullChecks": true
   },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules"]
+  "include": ["src/**/*"]
 }

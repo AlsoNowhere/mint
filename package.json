@@ -1,19 +1,23 @@
 {
   "name": "mint",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "description": "",
   "main": "./dist/mint.js",
   "scripts": {
-    "test": "jest --config ./tests/config.js",
-    "test:watch": "jest --watchAll",
+    "test": "jest --config ./tests/unit-tests/config.js",
+    "test:watch": "jest --config ./tests/unit-tests/config.js --watchAll",
     "build:js": "rollup --config",
-    "watch:js": "rollup --config --watch"
+    "build:js:prod": "set NODE_ENV=production && rollup --config",
+    "watch:js": "rollup --config --watch",
+    "ts:test": "tsc --noEmit"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@rollup/plugin-replace": "^5.0.7",
     "@rollup/plugin-typescript": "^8.5.0",
+    "@types/jest": "^29.5.14",
     "jest": "^29.2.2",
     "jest-environment-jsdom": "^29.2.2",
     "rollup": "^2.78.1",

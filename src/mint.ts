@@ -1,24 +1,40 @@
 export { app } from "./app/app";
+export { deleteApp } from "./app/delete-app";
 
-export { component } from "./services/component.service";
-export { element } from "./services/element.service";
-export { template } from "./services/template.service";
-export { context } from "./services/context.service";
-export { span, div } from "./elements/elements";
+export { component } from "./nodes/component";
+export { template } from "./nodes/template";
+export { node } from "./nodes/node";
 
-export { refresh } from "./logic/refresh/refresh.logic";
-export { getter } from "./getter/getter";
+export { resolvePropTypes } from "./logic/prop-types/resolve-prop-types.service";
 
-export { Base as MintComponent } from "./models/Base.model";
-export { MintElement } from "./models/MintElement.model";
-export { MintComponent as TMintComponent } from "./models/MintComponent.model";
+export { externalRefresh as refresh } from "./logic/refresh/refresh-common/external-refresh.logic";
+
+export { mExtend } from "./mAttributes/mExtend";
+export { mIf } from "./mAttributes/mIf";
+export { mFor } from "./mAttributes/mFor";
+export { mRef } from "./mAttributes/mRef";
+
+export { Store } from "./store/Store";
+
+export { MintScope } from "./models/MintScope.model";
 export { UpwardRef } from "./models/UpwardRef.model";
+export { Resolver } from "./models/scope-transformers/Resolver.model";
 
-export { IStore } from "./interfaces/IStore.interface";
-export { IProps } from "./interfaces/IProps.interface";
-export { IForData } from "./interfaces/IForData.interface";
-
-export { Resolver, Store } from "./store/Store";
+export { span } from "./quick-elements/span.element";
+export { div } from "./quick-elements/div.element";
 
 export { MintEvent } from "./types/MintEvent.type";
-export { lifecycle } from "./types/lifecycle.type";
+export { TRawContent as TMintContent } from "./types/TRawContent.type";
+export { TNode } from "./types/TNode.type";
+// ** Don't do this:
+// export { MintTemplate } from "./models/mint-nodes/MintTemplate.model";
+export { MintElement } from "./models/mint-nodes/MintElement.model";
+export { MintComponent } from "./models/mint-nodes/MintComponent.model";
+
+// ** Don't do this:
+// content: MintTemplate
+// this.content = template(() => node())
+
+// ** Do this instead:
+// content: TMintContent
+// this.content = () => node()
