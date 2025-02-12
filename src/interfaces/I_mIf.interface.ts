@@ -1,12 +1,13 @@
-import { MintElement } from "../models/MintElement.model";
+import { MintElement } from "../models/mint-nodes/MintElement.model";
+import { MintComponent } from "../models/mint-nodes/MintComponent.model";
 
-import { IScope } from "./IScope.interface";
+import { IMainScope } from "./IMainScope.interface";
 
 export interface I_mIf {
   inverse: boolean;
   ifValue: string;
   state: boolean;
-  scope: IScope;
-  templated: boolean;
-  mintElement?: MintElement;
+  scope: IMainScope;
+  blueprinted: boolean;
+  mintNode?: MintElement | MintComponent;
 }

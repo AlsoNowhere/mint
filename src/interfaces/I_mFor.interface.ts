@@ -1,18 +1,20 @@
-import { MintElement } from "../models/MintElement.model";
-import { Template } from "../models/Template.model";
+import { MintElement } from "../models/mint-nodes/MintElement.model";
+import { MintComponent } from "../models/mint-nodes/MintComponent.model";
+import { ElementBlueprint } from "../models/blueprint/ElementBlueprint.model";
+import { ComponentBlueprint } from "../models/blueprint/ComponentBlueprint.model";
 
 import { IForData } from "./IForData.interface";
-import { IScope } from "./IScope.interface";
+import { IMainScope } from "./IMainScope.interface";
 
-import { TFOR_Type } from "../types/TFOR_Type.type";
+import { FOR_Type } from "../enum/FOR_Type.enum";
 
 export interface I_mFor {
   forKey: string;
   forValue: string;
-  mintElement: MintElement;
-  scope: IScope;
+  mintNode: MintElement | MintComponent;
+  scope: IMainScope;
   forData?: Array<IForData | string | number>;
-  currentForRenders: Array<Template>;
+  currentForRenders: Array<ElementBlueprint | ComponentBlueprint>;
   oldForDataLength: null | number;
-  mForType?: TFOR_Type;
+  mForType?: FOR_Type;
 }

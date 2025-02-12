@@ -15,18 +15,17 @@ export const createForData = (
   scope: Object,
   index: number
 ): IForData => {
-  const Data: any = function _ForData() {
-    this._parent = scope;
+  const Data = function _ForData() {
     this._x = data;
     this._i = index;
-    this.__name = "_ForData";
   };
   Data.prototype = scope;
 
   const newScope: IForData = new Data();
 
   if (data instanceof Object) {
-    Object.entries(data).forEach(([key, value]) => {
+    const entries = Object.entries(data);
+    for (let [key, value] of entries) {
       Object.defineProperty(newScope, key, {
         // ** Set the value
         value,
@@ -37,7 +36,7 @@ export const createForData = (
         // ** Can it be deleted from this object
         configurable: true,
       });
-    });
+    }
   }
   return newScope;
 };
