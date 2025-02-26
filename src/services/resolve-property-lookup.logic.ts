@@ -13,7 +13,7 @@ import { MINT_WARN } from "../data/constants.data";
 
 export const resolvePropertyLookup = (target: string, scope: IMainScope) => {
   if (target === "_children") {
-    return scope._mintBlueprint.contentFor_children.length;
+    return scope._mintBlueprint.contentFor_children?.length;
   }
 
   let _value = scope;

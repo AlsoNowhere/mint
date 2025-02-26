@@ -1,2 +1,2 @@
-import { TRefresh } from "../../types/TRefresh.type";
-export declare const refreshMTemplate: TRefresh;
+import { TonRefresh } from "../../types/MintAttributes/TonRefresh.type";
+export declare const refreshMTemplate: TonRefresh;

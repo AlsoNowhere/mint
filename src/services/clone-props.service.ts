@@ -15,7 +15,7 @@ export const cloneProps = ({ props }: { props: IProps }) => {
     if (value instanceof MintAttribute) {
       // ** In specific examples, such as when cloning a MintNode for use in mFor, we need to make sure
       // ** each MintAttribute is unique.
-      newProps[key] = value.cloneAttribute();
+      newProps[key] = value.cloneAttribute(value);
     } else {
       newProps[key] = value;
     }

@@ -36,7 +36,7 @@ const generateBlueprint: TGenerate = ({
   const orderedProps = resolvePropsOrder(props);
 
   // ** Here we get the generate function for this particular mint element.
-  const generate = node.mintNode.generate;
+  const { generate } = node.mintNode;
 
   // ** If this is MintText or MintElement then the "generate" function will be on this MintNode.
   const blueprint: Blueprint = generate({

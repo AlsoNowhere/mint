@@ -11,8 +11,6 @@ import { _DevLogger_ } from "../../_DEV_/_DevLogger_";
 export const refreshElementBlueprint: TonRefresh = (
   blueprint: ElementBlueprint,
   parentElement,
-  blueprintList,
-  blueprintIndex,
   options
 ) => {
   /* Dev */
@@ -30,8 +28,6 @@ export const refreshElementBlueprint: TonRefresh = (
   const shouldReturn = resolveMAttributesOnRefresh(
     blueprint,
     parentElement,
-    blueprintList,
-    blueprintIndex,
     options
   );
 
@@ -44,11 +40,11 @@ export const refreshElementBlueprint: TonRefresh = (
   }
 
   if (!!collection) {
-    refreshBlueprints(collection);
+    refreshBlueprints(collection, options);
   }
 
   if (!!childBlueprints) {
-    refreshBlueprints(childBlueprints);
+    refreshBlueprints(childBlueprints, options);
   }
 
   return shouldReturn;

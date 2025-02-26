@@ -5,13 +5,14 @@ import { IRootScope } from "../../interfaces/IRootScope.interface";
 import { TElement } from "../../types/TElement.type";
 import { TParentBlueprint } from "../../types/TParentBlueprint.type";
 import { TShouldExit } from "../../types/TShouldExit.type";
-export declare const resolveMAttributesOnGenerate: ({ node, htmlElement, orderedProps, props, parentScope, scope, parentBlueprint, _rootScope, isSVG, isComponent, isAttribute, }: {
+export declare const resolveMAttributesOnGenerate: ({ node, htmlElement, orderedProps, props, parentScope, scope, _children, parentBlueprint, _rootScope, isSVG, isComponent, isAttribute, }: {
     node: INode;
     htmlElement: TElement | undefined;
     orderedProps: Array<string>;
     props: IProps;
     parentScope: IMainScope;
     scope: IMainScope;
+    _children: null | Array<INode>;
     parentBlueprint: TParentBlueprint | null;
     _rootScope: IRootScope;
     isSVG: boolean;

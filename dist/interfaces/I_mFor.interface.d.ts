@@ -8,7 +8,7 @@ import { FOR_Type } from "../enum/FOR_Type.enum";
 export interface I_mFor {
     forKey: string;
     forValue: string;
-    mintNode: MintElement | MintComponent;
+    nodeToClone: MintElement | MintComponent;
     scope: IMainScope;
     forData?: Array<IForData | string | number>;
     currentForRenders: Array<ElementBlueprint | ComponentBlueprint>;

@@ -27,16 +27,18 @@ export const recycleMForData = (
     }
   }
 
-  // ** Update or create values that weren't on Scope before.
-  const newDataKeys = Object.keys(newData);
+  if (typeof newData !== "string") {
+    // ** Update or create values that weren't on Scope before.
+    const newDataKeys = Object.keys(newData);
 
-  for (let key of newDataKeys) {
-    // ** This check is here not because we EXPECT these values to be on the new Object but because we DON'T EXPECT.
-    // ** If they are here then they will break the Mint refresh causing untold misery to millions... and
-    // ** as honest folk we can't possible allow that to happen!
-    if (forScopePermantProperties.includes(key)) continue;
+    for (let key of newDataKeys) {
+      // ** This check is here not because we EXPECT these values to be on the new Object but because we DON'T EXPECT.
+      // ** If they are here then they will break the Mint refresh causing untold misery to millions... and
+      // ** as honest folk we can't possible allow that to happen!
+      if (forScopePermantProperties.includes(key)) continue;
 
-    (currentScope as any)[key] = (newData as any)[key];
+      (currentScope as any)[key] = (newData as any)[key];
+    }
   }
 
   if (currentScope._i !== newIndex) {

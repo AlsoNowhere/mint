@@ -12,7 +12,12 @@ const global = {
     mintElement_index: 0,
 };
 const attributesThatAreBoolean = ["checked"];
-const attributesThatAreProperties = ["checked", "value"];
+const attributesThatAreProperties = [
+    "checked",
+    "value",
+    "textContent",
+    "innerHTML",
+];
 const forScopePermantProperties = [
     "_x",
     "_i",
@@ -60,7 +65,7 @@ const cloneProps = ({ props }) => {
         if (value instanceof MintAttribute) {
             // ** In specific examples, such as when cloning a MintNode for use in mFor, we need to make sure
             // ** each MintAttribute is unique.
-            newProps[key] = value.cloneAttribute();
+            newProps[key] = value.cloneAttribute(value);
         }
         else {
             newProps[key] = value;
@@ -127,7 +132,7 @@ const generateBlueprint = ({ node, parentBlueprint, scope, _rootScope, isSVG, us
     // ** This way they don't conflict with each other.
     const orderedProps = resolvePropsOrder(props);
     // ** Here we get the generate function for this particular mint element.
-    const generate = node.mintNode.generate;
+    const { generate } = node.mintNode;
     // ** If this is MintText or MintElement then the "generate" function will be on this MintNode.
     const blueprint = generate({
         node,
@@ -164,8 +169,10 @@ const generateBlueprints = ({ nodes, scope, parentBlueprint, _rootScope, isSVG =
 };
 
 class Blueprint {
-    constructor({ mintNode, scope, parentBlueprint, _rootScope }) {
+    constructor({ mintNode = null, render = null, refresh = null, scope, parentBlueprint, _rootScope, }) {
         this.mintNode = mintNode;
+        this.render = render;
+        this.refresh = refresh;
         this.scope = scope;
         this.parentBlueprint = parentBlueprint;
         this._rootScope = _rootScope;
@@ -211,8 +218,9 @@ const generateTextBlueprint = ({ node, scope, parentBlueprint, _rootScope, }) =>
 // ** const str = "Content: {data.content}"
 // ** scope = { data: { content: "text value" } }
 const resolvePropertyLookup = (target, scope) => {
+    var _a;
     if (target === "_children") {
-        return scope._mintBlueprint.contentFor_children.length;
+        return (_a = scope._mintBlueprint.contentFor_children) === null || _a === void 0 ? void 0 : _a.length;
     }
     let _value = scope;
     const lookups = target.split(".");
@@ -287,14 +295,16 @@ const refreshTextNode = (blueprint) => {
     /* Dev */
     // _DevLogger_("REFRESH", "TEXTNODE", textNode);
     element.nodeValue = deBracer(textValue, blueprint.scope, "Refresh - textNode");
+    return { condition: false };
 };
 
 const getWhereToInsert = (parentElement, childBlueprints, blueprintIndex) => {
     for (let [i, blueprint] of childBlueprints.entries()) {
         if (i < blueprintIndex + 1)
             continue;
-        if (blueprint.collection instanceof Array) {
-            for (let contentBlueprint of blueprint.collection) {
+        const collection = blueprint.collection || blueprint.forListBlueprints;
+        if (collection instanceof Array) {
+            for (let contentBlueprint of collection) {
                 const element = contentBlueprint.element;
                 if (parentElement.contains(element !== null && element !== void 0 ? element : null)) {
                     return element;
@@ -436,6 +446,19 @@ const renderBlueprint = (blueprint, parentElement, parentChildBlueprints, bluepr
         if (shouldReturn.condition) {
             return;
         }
+    }
+    if (blueprint.mintNode === null) {
+        const { collection } = blueprint;
+        if (collection) {
+            const indexes = [];
+            let i = blueprintIndex;
+            while (i - blueprintIndex < collection.length) {
+                indexes.push(i);
+                i++;
+            }
+            renderBlueprints(collection, parentElement, parentChildBlueprints, indexes);
+        }
+        return;
     }
     blueprint.mintNode.render(blueprint, parentElement, parentChildBlueprints, blueprintIndex);
 };
@@ -629,7 +652,13 @@ const handleResolverProperties = (scope, key, value, parentScope) => {
         });
     }
     else {
-        scope[key] = resolvePropertyLookup(value, parentScope);
+        const newValue = resolvePropertyLookup(value, parentScope);
+        // ** Here we check what the new value is going to be.
+        // ** If its undefined or null it means we don't want to change the default or previously
+        // ** defined value.
+        if (newValue === undefined || newValue === null)
+            return;
+        scope[key] = newValue;
     }
 };
 const bindingTemplateProp = (scope, key, value, parentScope) => {
@@ -686,7 +715,7 @@ const checkForErrorsOnBlueprint = (blueprint) => {
     // @>
 };
 
-const resolveMAttributesOnGenerate = ({ node, htmlElement, orderedProps, props, parentScope, scope, parentBlueprint, _rootScope, isSVG, isComponent, isAttribute, }) => {
+const resolveMAttributesOnGenerate = ({ node, htmlElement, orderedProps, props, parentScope, scope, _children, parentBlueprint, _rootScope, isSVG, isComponent, isAttribute, }) => {
     let shouldExit = { condition: false, value: undefined };
     for (let key of orderedProps) {
         const property = props[key];
@@ -702,6 +731,7 @@ const resolveMAttributesOnGenerate = ({ node, htmlElement, orderedProps, props, 
                     props,
                     parentScope,
                     scope,
+                    _children,
                     parentBlueprint,
                     _rootScope,
                     isSVG,
@@ -748,6 +778,7 @@ class ComponentBlueprint extends Blueprint {
 
 const generateComponentBlueprint = ({ node, orderedProps, props, scope: parentScope, parentBlueprint, _rootScope, isSVG, useGivenScope, }) => {
     var _a, _b;
+    // const { mintNode, content: _children } = node;
     const { mintNode, content: _children } = node;
     fixProps(mintNode.attributes);
     const mintComponent = mintNode;
@@ -765,7 +796,7 @@ const generateComponentBlueprint = ({ node, orderedProps, props, scope: parentSc
     element === "svg" && (isSVG = true);
     // <@ REMOVE FOR PRODUCTION
     if (element !== "<>" && ((element === null || element === void 0 ? void 0 : element.includes("<")) || (element === null || element === void 0 ? void 0 : element.includes(">")))) {
-        throw new Error(`${MINT_ERROR} Element sent to node() contains angle brackets "${element}". Use "${element.substring(1, element.length - 2)}" instead.`);
+        throw new Error(`${MINT_ERROR} Element sent to node() contains angle brackets "${element}". Use "${element.substring(1, element.length - 1)}" instead.`);
     }
     // @>
     // ** Generate new HTMLElement.
@@ -799,14 +830,17 @@ const generateComponentBlueprint = ({ node, orderedProps, props, scope: parentSc
             componentResolver(orderedProps !== null && orderedProps !== void 0 ? orderedProps : [], props !== null && props !== void 0 ? props : {}, mintComponent, parentScope);
         }
     }
-    // ** When a Component is defined, props are provided to it.
-    // ** Here we take those props and assign their values from the parent scope to this Component.
-    assignProps(componentScope, orderedProps !== null && orderedProps !== void 0 ? orderedProps : [], props !== null && props !== void 0 ? props : {}, parentScope);
+    if (!useGivenScope) {
+        // ** When a Component is defined, props are provided to it.
+        // ** Here we take those props and assign their values from the parent scope to this Component.
+        assignProps(componentScope, orderedProps !== null && orderedProps !== void 0 ? orderedProps : [], props !== null && props !== void 0 ? props : {}, parentScope);
+    }
     const commonValues = {
         node,
         htmlElement: newHTMLElement,
         parentScope,
         scope: componentScope,
+        _children,
         parentBlueprint,
         _rootScope,
         isSVG,
@@ -865,7 +899,6 @@ const generateComponentBlueprint = ({ node, orderedProps, props, scope: parentSc
         _rootScope,
         isSVG,
     });
-    // ===
     // ** Check if the children content contains the "_children" keyword.
     // ** Using this allows the content of this child blueprint to use custom content passed into this parent Component.
     // ** E.g
@@ -879,7 +912,6 @@ const generateComponentBlueprint = ({ node, orderedProps, props, scope: parentSc
         <div>Content</div>
       </main>
     */
-    //  ===
     const childBlueprints = resolveChildBlueprints(blueprint, _childBlueprints, isSVG);
     if (element === "<>") {
         blueprint.collection = childBlueprints;
@@ -1024,7 +1056,7 @@ const renderAttributes = (element, orderedAttributes, attributes, scope) => {
 
 const renderComponentBlueprint = (blueprint, parentElement, parentChildBlueprints, blueprintIndex) => {
     /* Dev */
-    // _DevLogger_("RENDER", "COMPONENT", blueprint, blueprintIndex);
+    // _DevLogger_("RENDER", "COMPONENT", blueprint);
     var _a, _b, _c, _d, _e;
     const { element, orderedAttributes, attributes, scope, collection, childBlueprints, } = blueprint;
     // ** LIFECYCLE CALL
@@ -1056,53 +1088,6 @@ const renderComponentBlueprint = (blueprint, parentElement, parentChildBlueprint
     return;
 };
 
-const fillOutElements = (blueprintList, initialBlueprint) => {
-    const output = [];
-    const a = output;
-    for (let x of blueprintList) {
-        const b = x;
-        if (b !== initialBlueprint && b.fragment) {
-            if (!!b.childBlueprints) {
-                a.push(...fillOutElements(b.childBlueprints, initialBlueprint));
-            }
-            if (!!b.collection) {
-                a.push(...fillOutElements(b.collection, initialBlueprint));
-            }
-        }
-        else {
-            a.push(b);
-        }
-    }
-    return output;
-};
-// ** Here we take a Blueprint and find the index among the parent content so that
-// ** we can insert the Blueprint content correctly amongst it.
-const getBlueprintIndex = (blueprint, initialBlueprint = blueprint) => {
-    const { parentBlueprint } = blueprint;
-    const { _rootChildBlueprints } = blueprint._rootScope;
-    let blueprintList, blueprintIndex;
-    if (parentBlueprint === null) {
-        blueprintList = fillOutElements(_rootChildBlueprints, initialBlueprint);
-        blueprintIndex = _rootChildBlueprints.indexOf(blueprint);
-        return { blueprintList, blueprintIndex };
-    }
-    const { fragment, collection, childBlueprints } = parentBlueprint;
-    if (fragment) {
-        return getBlueprintIndex(parentBlueprint, initialBlueprint);
-    }
-    if (childBlueprints !== undefined) {
-        blueprintList = childBlueprints;
-    }
-    if (collection !== undefined) {
-        blueprintList = collection;
-    }
-    blueprintList = fillOutElements(blueprintList, initialBlueprint);
-    blueprintIndex = blueprintList.indexOf(initialBlueprint);
-    /* DEV */
-    // _DevLogger_("REFRESH", "INDEX", blueprint, blueprintIndex);
-    return { blueprintList, blueprintIndex };
-};
-
 // ** It's not super easy to reason how to get the parentBlueprint of
 // ** of a Blueprint and so we put that logic here.
 const getParentElement = (blueprint) => {
@@ -1118,14 +1103,17 @@ const getParentElement = (blueprint) => {
 
 const refreshBlueprint = (blueprint, options) => {
     const parentElement = getParentElement(blueprint);
-    const { blueprintList, blueprintIndex } = getBlueprintIndex(blueprint);
     /* Dev */
     // _DevLogger_("REFRESH", "Blueprint", blueprint);
     const focusTarget = document.activeElement;
+    if (blueprint.mintNode === null) {
+        if (blueprint.refresh) {
+            blueprint.refresh(blueprint, { newlyInserted: options.newlyInserted });
+        }
+        return;
+    }
     const _refresh = blueprint.mintNode.refresh;
-    _refresh(blueprint, parentElement, blueprintList, blueprintIndex, {
-        newlyInserted: options.newlyInserted,
-    });
+    _refresh(blueprint, parentElement, options);
     // ** Here we check if the Element that was refreshed was the activeElement (had focus).
     // ** If it was then we re add the focus if it has been lost.
     if (focusTarget !== null &&
@@ -1134,9 +1122,9 @@ const refreshBlueprint = (blueprint, options) => {
         focusTarget.focus();
     }
 };
-const refreshBlueprints = (blueprints) => {
+const refreshBlueprints = (blueprints, options) => {
     for (let blueprint of blueprints) {
-        refreshBlueprint(blueprint, { newlyInserted: false });
+        refreshBlueprint(blueprint, options);
     }
 };
 
@@ -1240,7 +1228,7 @@ const refreshAttributes = (element, orderedAttributes, attributes, scope) => {
     }
 };
 
-const resolveMAttributesOnRefresh = (blueprint, parentElement, blueprintList, blueprintIndex, options) => {
+const resolveMAttributesOnRefresh = (blueprint, parentElement, options) => {
     const { orderedProps = [], props = {}, orderedAttributes = [], attributes = {}, } = blueprint;
     let shouldExit = { condition: false, value: undefined };
     for (let key of orderedProps) {
@@ -1252,8 +1240,6 @@ const resolveMAttributesOnRefresh = (blueprint, parentElement, blueprintList, bl
             shouldExit = resolver.apply(property, [
                 blueprint,
                 parentElement,
-                blueprintList,
-                blueprintIndex,
                 options,
             ]);
         }
@@ -1267,8 +1253,6 @@ const resolveMAttributesOnRefresh = (blueprint, parentElement, blueprintList, bl
             shouldExit = resolver.apply(property, [
                 blueprint,
                 parentElement,
-                blueprintList,
-                blueprintIndex,
                 options,
             ]);
         }
@@ -1276,7 +1260,7 @@ const resolveMAttributesOnRefresh = (blueprint, parentElement, blueprintList, bl
     return shouldExit;
 };
 
-const refreshComponentBlueprint = (blueprint, parentElement, blueprintList, blueprintIndex, options) => {
+const refreshComponentBlueprint = (blueprint, parentElement, options) => {
     /* Dev */
     // _DevLogger_("REFRESH", "COMPONENT: ", blueprint);
     var _a, _b, _c, _d, _e;
@@ -1286,7 +1270,7 @@ const refreshComponentBlueprint = (blueprint, parentElement, blueprintList, blue
         const parentScope = (_a = parentBlueprint === null || parentBlueprint === void 0 ? void 0 : parentBlueprint.scope) !== null && _a !== void 0 ? _a : blueprint._rootScope;
         assignProps(scope, orderedProps, props, parentScope);
     }
-    const shouldReturn = resolveMAttributesOnRefresh(blueprint, parentElement, blueprintList, blueprintIndex, options);
+    const shouldReturn = resolveMAttributesOnRefresh(blueprint, parentElement, options);
     if (shouldReturn.condition) {
         return shouldReturn;
     }
@@ -1297,10 +1281,10 @@ const refreshComponentBlueprint = (blueprint, parentElement, blueprintList, blue
         refreshAttributes(element, orderedAttributes, attributes, scope);
     }
     if (!!collection) {
-        refreshBlueprints(collection);
+        refreshBlueprints(collection, options);
     }
     if (!!childBlueprints) {
-        refreshBlueprints(childBlueprints);
+        refreshBlueprints(childBlueprints, options);
     }
     // ** LIFECYCLE CALL
     options.newlyInserted && ((_d = scope.onafterinsert) === null || _d === void 0 ? void 0 : _d.call(scope, { scope }));
@@ -1314,16 +1298,9 @@ class MintComponent extends MintNode {
         this.element = element;
         this.attributes = attributes !== null && attributes !== void 0 ? attributes : {};
         this.scope = scope;
-        this._children = null;
         if (scope === null || scope === void 0 ? void 0 : scope._propTypes) {
             this.propTypes = scope._propTypes;
         }
-    }
-    addChildren(_children) {
-        this._children = _children;
-    }
-    addProperties(props) {
-        this.props = props !== null && props !== void 0 ? props : undefined;
     }
     clone() {
         var _a;
@@ -1332,8 +1309,6 @@ class MintComponent extends MintNode {
             content.push(cloneContent(x));
         }
         const cloned = new MintComponent((_a = this.element) !== null && _a !== void 0 ? _a : "<>", Object.assign({}, this.attributes), content, this.scope);
-        cloned._children = this._children;
-        cloned.props = this.props;
         return cloned;
     }
 }
@@ -1435,6 +1410,53 @@ const getAllElements = (blueprints) => {
     return allElements;
 };
 
+const fillOutElements = (blueprintList, initialBlueprint) => {
+    const output = [];
+    const a = output;
+    for (let x of blueprintList) {
+        const b = x;
+        if (b !== initialBlueprint && b.fragment) {
+            if (!!b.childBlueprints) {
+                a.push(...fillOutElements(b.childBlueprints, initialBlueprint));
+            }
+            if (!!b.collection) {
+                a.push(...fillOutElements(b.collection, initialBlueprint));
+            }
+        }
+        else {
+            a.push(b);
+        }
+    }
+    return output;
+};
+// ** Here we take a Blueprint and find the index among the parent content so that
+// ** we can insert the Blueprint content correctly amongst it.
+const getBlueprintIndex = (blueprint, initialBlueprint = blueprint) => {
+    const { parentBlueprint } = blueprint;
+    const { _rootChildBlueprints } = blueprint._rootScope;
+    let blueprintList, blueprintIndex;
+    if (parentBlueprint === null) {
+        blueprintList = fillOutElements(_rootChildBlueprints, initialBlueprint);
+        blueprintIndex = _rootChildBlueprints.indexOf(blueprint);
+        return { blueprintList, blueprintIndex };
+    }
+    const { fragment, collection, childBlueprints } = parentBlueprint;
+    if (fragment) {
+        return getBlueprintIndex(parentBlueprint, initialBlueprint);
+    }
+    if (childBlueprints !== undefined) {
+        blueprintList = childBlueprints;
+    }
+    if (collection !== undefined) {
+        blueprintList = collection;
+    }
+    blueprintList = fillOutElements(blueprintList, initialBlueprint);
+    blueprintIndex = blueprintList.indexOf(initialBlueprint);
+    /* DEV */
+    // _DevLogger_("REFRESH", "INDEX", blueprint, blueprintIndex);
+    return { blueprintList, blueprintIndex };
+};
+
 const conductRefresh = (blueprint) => {
     var _a;
     const { collection } = blueprint;
@@ -1451,22 +1473,23 @@ const refreshMTemplate = (blueprint) => {
     const { options: { conditionedBy, onevery }, } = mintNode;
     // ** If there is no content to add; DO NOTHING
     if (collection === undefined)
-        return;
+        return { condition: false };
     // ** If we want to refresh every time then DO that here and end.
     if (onevery === true) {
         conductRefresh(blueprint);
-        return;
+        return { condition: false };
     }
     if (conditionedBy !== undefined) {
         const newTemplateState = resolvePropertyLookup(conditionedBy, scope);
         // ** If the conditional state hasn't changed: DO NOTHING
         if (templateState === newTemplateState)
-            return;
+            return { condition: false };
         // ** Update the state for next time.
         blueprint.templateState = newTemplateState;
         conductRefresh(blueprint);
-        return;
+        return { condition: false };
     }
+    return { condition: false };
 };
 
 class MintTemplate extends MintNode {
@@ -1553,6 +1576,7 @@ const generateElementBlueprint = ({ node, orderedProps: orderedAttributes, props
             node,
             parentScope: scope,
             scope,
+            _children: null,
             parentBlueprint,
             _rootScope,
             isSVG,
@@ -1574,7 +1598,7 @@ const generateElementBlueprint = ({ node, orderedProps: orderedAttributes, props
         _rootScope,
     });
     /* Dev */
-    // _DevLogger_("GENERATE", "ELEMENT", blueprint, parentBlueprint);
+    // _DevLogger_("GENERATE", "ELEMENT", blueprint);
     const _childBlueprints = [];
     // ** Here we produce the content of the children of this Element.
     if (content !== undefined) {
@@ -1613,7 +1637,7 @@ const generateElementBlueprint = ({ node, orderedProps: orderedAttributes, props
 const renderElementBlueprint = (blueprint, parentElement, parentChildBlueprints, blueprintIndex) => {
     const { element, orderedAttributes, attributes, scope, collection, childBlueprints, } = blueprint;
     /* Dev */
-    // _DevLogger_("RENDER", "ELEMENT", blueprint);
+    // _DevLogger_("RENDER", "ELEMENT", blueprint, blueprintIndex);
     if (element !== undefined) {
         renderAttributes(element, orderedAttributes, attributes, scope);
     }
@@ -1635,11 +1659,11 @@ const renderElementBlueprint = (blueprint, parentElement, parentChildBlueprints,
     }
 };
 
-const refreshElementBlueprint = (blueprint, parentElement, blueprintList, blueprintIndex, options) => {
+const refreshElementBlueprint = (blueprint, parentElement, options) => {
     /* Dev */
     // _DevLogger_("REFRESH", "ELEMENT", blueprint);
     const { element, collection, orderedAttributes, attributes, scope, childBlueprints, } = blueprint;
-    const shouldReturn = resolveMAttributesOnRefresh(blueprint, parentElement, blueprintList, blueprintIndex, options);
+    const shouldReturn = resolveMAttributesOnRefresh(blueprint, parentElement, options);
     if (shouldReturn.condition) {
         return shouldReturn;
     }
@@ -1647,19 +1671,22 @@ const refreshElementBlueprint = (blueprint, parentElement, blueprintList, bluepr
         refreshAttributes(element, orderedAttributes, attributes, scope);
     }
     if (!!collection) {
-        refreshBlueprints(collection);
+        refreshBlueprints(collection, options);
     }
     if (!!childBlueprints) {
-        refreshBlueprints(childBlueprints);
+        refreshBlueprints(childBlueprints, options);
     }
     return shouldReturn;
 };
 
 class MintElement extends MintNode {
-    constructor(element, props = null, content) {
+    constructor(element, 
+    // props: null | IProps = null,
+    attributes = null, content) {
         super(content, generateElementBlueprint, renderElementBlueprint, refreshElementBlueprint);
         this.element = element;
-        this.props = props !== null && props !== void 0 ? props : {};
+        // this.props = props ?? {};
+        this.attributes = attributes !== null && attributes !== void 0 ? attributes : {};
     }
     clone() {
         var _a;
@@ -1667,7 +1694,9 @@ class MintElement extends MintNode {
         for (let x of this.content) {
             content.push(cloneContent(x));
         }
-        return new MintElement((_a = this.element) !== null && _a !== void 0 ? _a : "<>", Object.assign({}, this.props), content);
+        return new MintElement((_a = this.element) !== null && _a !== void 0 ? _a : "<>", 
+        // Object.assign({}, this.props),
+        Object.assign({}, this.attributes), content);
     }
 }
 
@@ -1692,6 +1721,7 @@ const node = (element, props = null, initialContent = null) => {
     }
     else {
         mintNode = element;
+        // (element as MintComponent)._children = content;
     }
     return new CreateNode(mintNode, props, content);
 };
@@ -1793,7 +1823,7 @@ const externalRefreshBlueprint = (scopeOrBlueprint) => {
         return;
     }
     currentlyTracking.addBlueprint(blueprint);
-    refreshBlueprints([blueprint]);
+    refreshBlueprints([blueprint], { newlyInserted: false });
     currentlyTracking.removeBlueprint(blueprint);
 };
 const externalRefresh = (target) => {
@@ -1981,8 +2011,10 @@ const fromFalseNotBlueprintedToTrue = (blueprint, parentElement, options) => {
     });
     // ** We need to replace this previous IfBlueprint as its not longer the correct context.
     if (parentBlueprint !== null) {
+        // ** When not at root element
         const { childBlueprints, collection } = parentBlueprint;
         if (childBlueprints !== undefined) {
+            // ** Child blueprints
             let index = -1;
             for (let [i, x] of childBlueprints.entries()) {
                 if (x === ifBlueprint) {
@@ -1992,6 +2024,7 @@ const fromFalseNotBlueprintedToTrue = (blueprint, parentElement, options) => {
             childBlueprints.splice(index, 1, newBlueprint);
         }
         if (collection !== undefined) {
+            // ** Collection
             let index = -1;
             for (let [i, x] of collection.entries()) {
                 if (x === ifBlueprint) {
@@ -2002,6 +2035,7 @@ const fromFalseNotBlueprintedToTrue = (blueprint, parentElement, options) => {
         }
     }
     else {
+        // ** When at root element.
         const { _rootChildBlueprints } = blueprint._rootScope;
         let index = -1;
         for (let [i, x] of _rootChildBlueprints.entries()) {
@@ -2071,7 +2105,8 @@ const stateShift = (blueprint, parentElement, parentBlueprintList, blueprintInde
     }
     return { newState, newlyInserted };
 };
-const refreshMIf = (mIf, blueprint, parentElement, parentBlueprintList, blueprintIndex, options) => {
+const refreshMIf = (mIf, blueprint, parentElement, options) => {
+    const { blueprintList: parentBlueprintList, blueprintIndex } = getBlueprintIndex(blueprint);
     const oldBlueprinted = mIf.blueprinted;
     const { newState, newlyInserted } = stateShift(blueprint, parentElement, parentBlueprintList, blueprintIndex, mIf);
     options.newlyInserted = newlyInserted !== null && newlyInserted !== void 0 ? newlyInserted : false;
@@ -2104,9 +2139,9 @@ class MintIf extends MintAttribute {
             const { _mIf } = this;
             return renderMIf(blueprint, _mIf);
         };
-        this.onRefresh = function (blueprint, parentElement, parentBlueprintList, blueprintIndex, options) {
+        this.onRefresh = function (blueprint, parentElement, options) {
             const { _mIf } = this;
-            return refreshMIf(_mIf, blueprint, parentElement, parentBlueprintList, blueprintIndex, options);
+            return refreshMIf(_mIf, blueprint, parentElement, options);
         };
     }
 }
@@ -2145,25 +2180,6 @@ const checkUniqueService = (key) => {
     };
 };
 
-// ** This function takes a list of attributes to remove from the attributes
-// ** of an Element's Blueprint.
-const removeFromOrderedAttributes = (orderedAttributes, props, attributeKeys) => {
-    for (let attr of attributeKeys) {
-        // ** Find index
-        let index = -1;
-        for (let [i, x] of orderedAttributes.entries()) {
-            if (x === attr) {
-                index = i;
-            }
-        }
-        // ** Remove if found
-        if (index !== -1) {
-            orderedAttributes.splice(index, 1);
-            delete props[attr];
-        }
-    }
-};
-
 /*
   This is a very important Function.
   When passing an Array of Objects to a mFor we need to go over the data of each
@@ -2199,24 +2215,34 @@ const createForData = (data, scope, index) => {
     return newScope;
 };
 
-const generatemForBlueprint = (mintNode, scope, parentBlueprint, data, index, _rootScope, isSVG = false) => {
+const generatemForBlueprint = (nodeToClone, scope, orderedProps, props, _children, parentBlueprint, data, index, _rootScope, isSVG = false) => {
     var _a, _b;
     if (data instanceof Blueprint)
         return data;
     let newScope;
-    if (!!mintNode.scope) {
-        newScope = new ((_a = mintNode.scope) !== null && _a !== void 0 ? _a : MintScope)();
+    if (!!nodeToClone.scope) {
+        newScope = new ((_a = nodeToClone.scope) !== null && _a !== void 0 ? _a : MintScope)();
+        assignProps(newScope, orderedProps, props, scope);
     }
     else {
         newScope = scope || new MintScope();
     }
+    applyScopeTransformers(newScope);
     const _scope = createForData(data, newScope, index);
-    const mintElementClone = mintNode.clone();
-    if (!!mintElementClone.props) {
-        delete mintElementClone.props.mFor;
-        delete mintElementClone.props.mKey;
+    if (!!nodeToClone.scope) {
+        assignProps(newScope, orderedProps, props, _scope);
     }
-    const cloneMintNode = new CreateNode(mintElementClone, (_b = mintElementClone.props) !== null && _b !== void 0 ? _b : null, mintElementClone.content);
+    const mintElementClone = nodeToClone.clone();
+    if (!!mintElementClone.attributes) {
+        delete mintElementClone.attributes.mFor;
+        delete mintElementClone.attributes.mKey;
+        delete mintElementClone.attributes.mForType;
+    }
+    const cloneMintNode = new CreateNode(mintElementClone, (_b = mintElementClone.attributes) !== null && _b !== void 0 ? _b : null, _children);
+    cloneMintNode.props = Object.assign({}, props);
+    delete cloneMintNode.props.mFor;
+    delete cloneMintNode.props.mKey;
+    delete cloneMintNode.props.mForType;
     const [blueprint] = generateBlueprints({
         nodes: [cloneMintNode],
         scope: _scope,
@@ -2229,18 +2255,19 @@ const generatemForBlueprint = (mintNode, scope, parentBlueprint, data, index, _r
 };
 
 class ForBlueprint extends Blueprint {
-    constructor({ mintNode, fragment, orderedProps, props, scope, parentBlueprint, collection, _rootScope, isSVG, }) {
-        super({
-            mintNode,
-            scope,
-            parentBlueprint,
-            _rootScope,
-        });
+    constructor({ 
+    // mintNode,
+    render, refresh, nodeToClone, fragment, orderedProps, props, scope, parentBlueprint, forListBlueprints, 
+    // collection,
+    _rootScope, isSVG, }) {
+        super({ render, refresh, scope, parentBlueprint, _rootScope });
+        this.nodeToClone = nodeToClone;
         if (!!fragment)
             this.fragment = fragment;
         this.orderedProps = orderedProps;
         this.props = props;
-        this.collection = collection;
+        this.forListBlueprints = forListBlueprints;
+        // this.collection = collection;
         if (!!isSVG)
             this.isSVG = isSVG;
         this._dev = "For";
@@ -2252,111 +2279,6 @@ var FOR_Type;
     FOR_Type[FOR_Type["default"] = 0] = "default";
     FOR_Type[FOR_Type["match"] = 1] = "match";
 })(FOR_Type || (FOR_Type = {}));
-
-const createmForObject = ({ forKey, forValue, mForType, mintNode, parentScope, parentBlueprint, _rootScope, isSVG, }) => {
-    const initialForData = resolvePropertyLookup(forValue, parentScope);
-    if (!(initialForData instanceof Array) || initialForData === undefined) {
-        throw new Error(`${MINT_ERROR} Must pass in an Array or undefined to mFor (mFor: "${forValue}")`);
-    }
-    // ** Here we run a check against the mKey to check there are no duplicates.
-    // ** We only want to include one for each key match and ignore duplicates.
-    const checkUnique = checkUniqueService(forKey);
-    const cloneForData = [...initialForData];
-    const forData = [];
-    for (let [i, x] of cloneForData.entries()) {
-        if (checkUnique(x, i, cloneForData)) {
-            forData.push(x);
-        }
-    }
-    // ** Duplicates won't cause errors but we warn the user because its isn't expected.
-    if (initialForData.length !== forData.length) {
-        console.warn(`mFor -- duplicate elements detected. Only one instance will be rendered. Check mKey value. ${forKey}`);
-    }
-    const currentForRenders = [];
-    for (let [i, x] of forData.entries()) {
-        currentForRenders.push(generatemForBlueprint(mintNode, parentScope, parentBlueprint, x, i, _rootScope, isSVG));
-    }
-    return {
-        forKey,
-        forValue,
-        mintNode,
-        scope: parentScope,
-        forData,
-        currentForRenders,
-        oldForDataLength: forData.length,
-        mForType,
-    };
-};
-const generateMFor = ({ mForInstance, forValue, node, orderedProps, props, parentScope, parentBlueprint, _rootScope, isSVG, }) => {
-    var _a;
-    const mintNode = node.mintNode;
-    // <@ REMOVE FOR PRODUCTION
-    {
-        if (props.mKey === undefined) {
-            console.error(mintNode);
-            throw new Error(`${MINT_ERROR} mFor must have a mKey attribute`);
-        }
-    }
-    // @>
-    const forKey = props.mKey;
-    // <@ REMOVE FOR PRODUCTION
-    {
-        if (forKey.includes(" ")) {
-            console.warn(`${MINT_WARN} mKey value defined with a space, this may be a mistake. Value: "${forKey}".`);
-        }
-    }
-    // @>
-    // <@ REMOVE FOR PRODUCTION
-    if (forValue.includes(" ")) {
-        console.warn(`${MINT_WARN} mFor value defined with a space, this may be a mistake. Value: "${forValue}".`);
-    }
-    // @>
-    const mForType = (_a = props.mForType) !== null && _a !== void 0 ? _a : FOR_Type.default;
-    removeFromOrderedAttributes(orderedProps, props, ["mKey", "mForType"]);
-    mForInstance._mFor = createmForObject({
-        forKey,
-        forValue,
-        mForType,
-        mintNode: mintNode,
-        parentScope,
-        parentBlueprint,
-        _rootScope,
-        isSVG,
-    });
-    const collection = mForInstance._mFor.currentForRenders;
-    mForInstance.blueprint = new ForBlueprint({
-        mintNode: mintNode,
-        orderedProps,
-        props,
-        scope: parentScope,
-        parentBlueprint,
-        _rootScope,
-        collection: collection,
-        isSVG: isSVG || undefined,
-    });
-    return {
-        condition: true,
-        value: mForInstance.blueprint,
-    };
-};
-
-const renderFor = (blueprint, childBlueprints, parentElement, blueprintIndex) => {
-    // <@ REMOVE FOR PRODUCTION
-    if (blueprint === null ||
-        blueprint.collection === null ||
-        blueprint.collection === undefined) {
-        throw new Error(`${MINT_ERROR} Render - For - Wrong Blueprint sent to mFor.`);
-    }
-    // @>
-    const { collection } = blueprint;
-    for (let x of collection) {
-        renderBlueprints([x], parentElement, childBlueprints, [blueprintIndex]);
-    }
-    return {
-        condition: true,
-        value: blueprint,
-    };
-};
 
 const recycleMForData = (currentScope, newData, newIndex) => {
     // ** Update the Object reference:
@@ -2376,15 +2298,17 @@ const recycleMForData = (currentScope, newData, newIndex) => {
             delete currentScope[key];
         }
     }
-    // ** Update or create values that weren't on Scope before.
-    const newDataKeys = Object.keys(newData);
-    for (let key of newDataKeys) {
-        // ** This check is here not because we EXPECT these values to be on the new Object but because we DON'T EXPECT.
-        // ** If they are here then they will break the Mint refresh causing untold misery to millions... and
-        // ** as honest folk we can't possible allow that to happen!
-        if (forScopePermantProperties.includes(key))
-            continue;
-        currentScope[key] = newData[key];
+    if (typeof newData !== "string") {
+        // ** Update or create values that weren't on Scope before.
+        const newDataKeys = Object.keys(newData);
+        for (let key of newDataKeys) {
+            // ** This check is here not because we EXPECT these values to be on the new Object but because we DON'T EXPECT.
+            // ** If they are here then they will break the Mint refresh causing untold misery to millions... and
+            // ** as honest folk we can't possible allow that to happen!
+            if (forScopePermantProperties.includes(key))
+                continue;
+            currentScope[key] = newData[key];
+        }
     }
     if (currentScope._i !== newIndex) {
         currentScope._i = newIndex;
@@ -2433,7 +2357,8 @@ const matchElements = (currentRenders, oldList, newList, forKey) => {
 
 const handleErrorsAndWarnings = (blueprint, mFor) => {
     var _a, _b;
-    const { mintNode, collection, parentBlueprint, _rootScope, isSVG } = blueprint;
+    const { nodeToClone, orderedProps, props, forListBlueprints, parentBlueprint, _rootScope, isSVG, } = blueprint;
+    const { blueprintIndex } = getBlueprintIndex(blueprint);
     const childBlueprints = (_a = parentBlueprint === null || parentBlueprint === void 0 ? void 0 : parentBlueprint.childBlueprints) !== null && _a !== void 0 ? _a : _rootScope._rootChildBlueprints;
     const parentScope = (_b = parentBlueprint === null || parentBlueprint === void 0 ? void 0 : parentBlueprint.scope) !== null && _b !== void 0 ? _b : _rootScope;
     const { forKey } = mFor;
@@ -2463,12 +2388,15 @@ const handleErrorsAndWarnings = (blueprint, mFor) => {
     return {
         forKey,
         forData,
+        blueprintIndex,
         parentElement,
-        mintNode,
+        nodeToClone,
+        orderedProps,
+        props,
         parentScope,
-        parentBlueprint,
-        collection,
+        forListBlueprints,
         childBlueprints,
+        parentBlueprint,
         _rootScope,
         isSVG,
     };
@@ -2509,9 +2437,9 @@ const rearrangeElements = (forRenders, options) => {
         }
     }
 };
-const refreshMFor = (blueprint, blueprintIndex, { _mFor, newlyInserted }) => {
+const refreshMFor = (blueprint, { _mFor, newlyInserted }) => {
     var _a;
-    const { forKey, forData, parentElement, mintNode, parentScope, parentBlueprint, collection, childBlueprints, _rootScope, isSVG, } = handleErrorsAndWarnings(blueprint, _mFor);
+    const { forKey, forData, blueprintIndex, parentElement, nodeToClone, orderedProps, props, parentScope, parentBlueprint, forListBlueprints, childBlueprints, _rootScope, isSVG, } = handleErrorsAndWarnings(blueprint, _mFor);
     _mFor.forData = forData;
     const newList = forData;
     _mFor.oldForDataLength = newList.length;
@@ -2522,10 +2450,9 @@ const refreshMFor = (blueprint, blueprintIndex, { _mFor, newlyInserted }) => {
     // ** Find if each new item already exists on current list of childBlueprints.
     // ** If not then add the scope only. That way we can check which are already blueprinted
     // ** and blueprint the ones that aren't later.
-    // {
     for (let [i, item] of newList.entries()) {
         let newCurrentRender = undefined;
-        for (let x of collection) {
+        for (let x of forListBlueprints) {
             const { scope } = x;
             if (scope === undefined)
                 continue;
@@ -2550,13 +2477,15 @@ const refreshMFor = (blueprint, blueprintIndex, { _mFor, newlyInserted }) => {
         newCurrentForRenders.push(newCurrentRender || item);
         i++;
     }
+    // ** Here we take the newly sorted renders and make sure they are all Blueprints
+    // ** if not already.
     const forRenders = [];
     for (let [i, x] of newCurrentForRenders.entries()) {
         if (x instanceof Blueprint) {
             forRenders.push(x);
         }
         else {
-            forRenders.push(generatemForBlueprint(mintNode, parentScope, parentBlueprint, x, i, _rootScope, isSVG));
+            forRenders.push(generatemForBlueprint(nodeToClone, parentScope, orderedProps, props, nodeToClone.content, parentBlueprint, x, i, _rootScope, isSVG));
         }
     }
     _mFor.currentForRenders = forRenders;
@@ -2573,7 +2502,7 @@ const refreshMFor = (blueprint, blueprintIndex, { _mFor, newlyInserted }) => {
         }
     }
     // ** Cycle through old list and if its not on the new list then remove this element.
-    for (let currentRender of collection) {
+    for (let currentRender of forListBlueprints) {
         if (!newCurrentForRenders.includes(currentRender) &&
             currentRender instanceof ElementBlueprint) {
             const element = currentRender.element;
@@ -2581,7 +2510,7 @@ const refreshMFor = (blueprint, blueprintIndex, { _mFor, newlyInserted }) => {
         }
     }
     for (let targetRender of forRenders) {
-        if (!collection.includes(targetRender)) {
+        if (!forListBlueprints.includes(targetRender)) {
             const element = targetRender.element;
             if (element !== undefined) {
                 addElement(element, parentElement, childBlueprints, blueprintIndex);
@@ -2589,22 +2518,25 @@ const refreshMFor = (blueprint, blueprintIndex, { _mFor, newlyInserted }) => {
         }
     }
     for (let targetRender of forRenders) {
-        if (!collection.includes(targetRender)) {
-            targetRender.mintNode.render(targetRender, parentElement, childBlueprints, blueprintIndex);
+        const { mintNode } = targetRender;
+        if (mintNode === null)
+            continue;
+        if (!forListBlueprints.includes(targetRender)) {
+            mintNode.render(targetRender, parentElement, childBlueprints, blueprintIndex);
         }
         else {
-            const _refresh = targetRender.mintNode.refresh;
-            _refresh(targetRender, {
+            const _refresh = mintNode.refresh;
+            _refresh(targetRender, parentElement, {
                 newlyInserted,
             });
         }
     }
     // ** We need to make sure that things are kept in sync.
-    // ** Here we tell the collection about the new list of Blueprints, either added or removed.
+    // ** Here we tell the forListBlueprints about the new list of Blueprints, either added or removed.
     {
-        collection.length = 0;
+        forListBlueprints.length = 0;
         for (let x of forRenders) {
-            collection.push(x);
+            forListBlueprints.push(x);
         }
     }
     rearrangeElements(forRenders, {
@@ -2618,9 +2550,139 @@ const refreshMFor = (blueprint, blueprintIndex, { _mFor, newlyInserted }) => {
     };
 };
 
+const createmForObject = ({ forKey, forValue, mForType, nodeToClone, _children, parentScope, orderedProps, props, parentBlueprint, _rootScope, isSVG, }) => {
+    const initialForData = resolvePropertyLookup(forValue, parentScope);
+    if (!(initialForData instanceof Array) || initialForData === undefined) {
+        throw new Error(`${MINT_ERROR} Must pass in an Array or undefined to mFor (mFor: "${forValue}")`);
+    }
+    // ** Here we run a check against the mKey to check there are no duplicates.
+    // ** We only want to include one for each key match and ignore duplicates.
+    const checkUnique = checkUniqueService(forKey);
+    const cloneForData = [...initialForData];
+    const forData = [];
+    for (let [i, x] of cloneForData.entries()) {
+        if (checkUnique(x, i, cloneForData)) {
+            forData.push(x);
+        }
+    }
+    // ** Duplicates won't cause errors but we warn the user because its isn't expected.
+    if (initialForData.length !== forData.length) {
+        console.warn(`mFor -- duplicate elements detected. Only one instance will be rendered. Check mKey value. ${forKey}`);
+    }
+    const currentForRenders = [];
+    for (let [i, x] of forData.entries()) {
+        currentForRenders.push(generatemForBlueprint(nodeToClone, parentScope, orderedProps, props, _children, parentBlueprint, x, i, _rootScope, isSVG));
+    }
+    return {
+        forKey,
+        forValue,
+        nodeToClone,
+        scope: parentScope,
+        forData,
+        currentForRenders,
+        oldForDataLength: forData.length,
+        mForType,
+    };
+};
+const generateMFor = ({ mForInstance, forValue, node, orderedProps, props, _children, parentScope, parentBlueprint, _rootScope, isSVG, }) => {
+    var _a;
+    const nodeToClone = node.mintNode;
+    if (mForInstance.generated)
+        return { condition: false };
+    // <@ REMOVE FOR PRODUCTION
+    {
+        if (props.mKey === undefined) {
+            console.error(nodeToClone);
+            throw new Error(`${MINT_ERROR} mFor must have a mKey attribute`);
+        }
+    }
+    // @>
+    const forKey = props.mKey;
+    // <@ REMOVE FOR PRODUCTION
+    {
+        if (forKey.includes(" ")) {
+            console.warn(`${MINT_WARN} mKey value defined with a space, this may be a mistake. Value: "${forKey}".`);
+        }
+    }
+    // @>
+    // <@ REMOVE FOR PRODUCTION
+    if (forValue.includes(" ")) {
+        console.warn(`${MINT_WARN} mFor value defined with a space, this may be a mistake. Value: "${forValue}".`);
+    }
+    // @>
+    mForInstance.generated = true;
+    const mForType = (_a = props.mForType) !== null && _a !== void 0 ? _a : FOR_Type.default;
+    // removeFromOrderedAttributes(orderedProps, props, [
+    //   "mFor",
+    //   "mKey",
+    //   "mForType",
+    // ]);
+    mForInstance._mFor = createmForObject({
+        forKey,
+        forValue,
+        mForType,
+        nodeToClone: nodeToClone,
+        _children,
+        parentScope,
+        orderedProps,
+        props,
+        parentBlueprint,
+        _rootScope,
+        isSVG,
+    });
+    const forListBlueprints = mForInstance._mFor.currentForRenders;
+    const runRefresh = (blueprint, options) => {
+        // refreshBlueprints(blueprint.forListBlueprints);
+        refreshMFor(blueprint, Object.assign({ _mFor: mForInstance._mFor }, options));
+    };
+    mForInstance.blueprint = new ForBlueprint({
+        render: mForInstance.onRender,
+        // refresh: mForInstance.onRefresh,
+        refresh: runRefresh,
+        nodeToClone: nodeToClone,
+        orderedProps,
+        props,
+        scope: parentScope,
+        parentBlueprint,
+        _rootScope,
+        forListBlueprints,
+        // collection: collection as Array<Blueprint>,
+        isSVG: isSVG || undefined,
+    });
+    return {
+        condition: true,
+        value: mForInstance.blueprint,
+    };
+};
+
+const renderFor = (blueprint, childBlueprints, parentElement, blueprintIndex) => {
+    // <@ REMOVE FOR PRODUCTION
+    if (blueprint === null ||
+        blueprint.forListBlueprints === null ||
+        blueprint.forListBlueprints === undefined) {
+        throw new Error(`${MINT_ERROR} Render - For - Wrong Blueprint sent to mFor.`);
+    }
+    // @>
+    const { forListBlueprints } = blueprint;
+    for (let x of forListBlueprints) {
+        renderBlueprints([x], parentElement, childBlueprints, [blueprintIndex]);
+    }
+    return {
+        condition: true,
+        value: blueprint,
+    };
+};
+
 class MintFor extends MintAttribute {
     constructor(forValue) {
-        super(() => new MintFor(forValue));
+        super((oldInstance) => {
+            const newInstance = new MintFor(forValue);
+            newInstance._mFor = oldInstance._mFor;
+            newInstance.generated = oldInstance.generated;
+            newInstance.blueprint = oldInstance.blueprint;
+            return newInstance;
+        });
+        this.generated = false;
         this.onGenerate = function (_a) {
             var args = __rest(_a, []);
             const that = this;
@@ -2628,19 +2690,17 @@ class MintFor extends MintAttribute {
         };
         this.onRender = function (blueprint, parentElement, parentChildBlueprints, blueprintIndex) {
             /* DEV */
-            // _DevLogger_("RENDER", "FOR", blueprint, blueprintIndex);
+            // _DevLogger_("RENDER", "FOR", blueprint, this);
             const that = this;
             if (that.blueprint !== blueprint) {
                 throw new Error("This is an unexpected error");
             }
             return renderFor(that.blueprint, parentChildBlueprints, parentElement, blueprintIndex);
         };
-        this.onRefresh = function (_, __, ___, blueprintIndex, { newlyInserted }) {
+        this.onRefresh = function (_, __, options) {
             const that = this;
-            return refreshMFor(that.blueprint, blueprintIndex, {
-                _mFor: that._mFor,
-                newlyInserted,
-            });
+            refreshMFor(that.blueprint, Object.assign({ _mFor: that._mFor }, options));
+            return { condition: false };
         };
     }
 }

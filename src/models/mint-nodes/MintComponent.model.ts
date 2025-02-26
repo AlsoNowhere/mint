@@ -7,7 +7,6 @@ import { MintNode } from "./MintNode.model";
 
 import { IConstructorScope } from "../../interfaces/IConstructorScope.interface";
 import { IAttributes } from "../../interfaces/IAttributes.interface";
-import { IProps } from "../../interfaces/IProps.interface";
 import { INode } from "../../interfaces/INode.interface";
 
 import { TProps } from "../../types/TProps.type";
@@ -20,7 +19,6 @@ export class MintComponent extends MintNode {
   scope: null | IConstructorScope;
   propTypes?: Record<string, TProps>;
   orderedProperties?: Array<string>;
-  _children: null | Array<INode>;
 
   constructor(
     element: string,
@@ -38,19 +36,10 @@ export class MintComponent extends MintNode {
     this.element = element;
     this.attributes = attributes ?? {};
     this.scope = scope;
-    this._children = null;
 
     if (scope?._propTypes) {
       this.propTypes = scope._propTypes;
     }
-  }
-
-  public addChildren(_children: null | Array<INode>) {
-    this._children = _children;
-  }
-
-  public addProperties(props: null | IProps) {
-    this.props = props ?? undefined;
   }
 
   public clone() {
@@ -64,9 +53,6 @@ export class MintComponent extends MintNode {
       content,
       this.scope
     );
-
-    cloned._children = this._children;
-    cloned.props = this.props;
 
     return cloned;
   }

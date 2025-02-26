@@ -13,9 +13,7 @@ import { _DevLogger_ } from "../../_DEV_/_DevLogger_";
 export const refreshComponentBlueprint: TonRefresh = (
   blueprint: ComponentBlueprint,
   parentElement,
-  blueprintList,
-  blueprintIndex,
-  options: { newlyInserted: boolean }
+  options
 ) => {
   /* Dev */
   // _DevLogger_("REFRESH", "COMPONENT: ", blueprint);
@@ -42,8 +40,6 @@ export const refreshComponentBlueprint: TonRefresh = (
   const shouldReturn = resolveMAttributesOnRefresh(
     blueprint,
     parentElement,
-    blueprintList,
-    blueprintIndex,
     options
   );
 
@@ -60,11 +56,11 @@ export const refreshComponentBlueprint: TonRefresh = (
   }
 
   if (!!collection) {
-    refreshBlueprints(collection);
+    refreshBlueprints(collection, options);
   }
 
   if (!!childBlueprints) {
-    refreshBlueprints(childBlueprints);
+    refreshBlueprints(childBlueprints, options);
   }
 
   // ** LIFECYCLE CALL

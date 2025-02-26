@@ -5,14 +5,20 @@ import { IProps } from "../../interfaces/IProps.interface";
 import { IAttributes } from "../../interfaces/IAttributes.interface";
 import { TElement } from "../../types/TElement.type";
 import { TParentBlueprint } from "../../types/TParentBlueprint.type";
+import { TRender } from "../../types/TRender.type";
+import { TRefresh } from "../../types/TRefresh.type";
 type TArguments = {
-    mintNode: MintNode;
+    mintNode?: null | MintNode;
+    render?: null | TRender;
+    refresh?: null | TRefresh;
     scope: IMainScope;
     parentBlueprint: null | TParentBlueprint;
     _rootScope: IRootScope;
 };
 export declare abstract class Blueprint {
-    mintNode: MintNode;
+    mintNode: null | MintNode;
+    render: null | TRender;
+    refresh: null | TRefresh;
     element?: Text | TElement;
     orderedProps?: Array<string>;
     props?: IProps;
@@ -24,6 +30,6 @@ export declare abstract class Blueprint {
     collection?: Array<Blueprint>;
     childBlueprints?: Array<Blueprint>;
     mintElement_index: number;
-    constructor({ mintNode, scope, parentBlueprint, _rootScope }: TArguments);
+    constructor({ mintNode, render, refresh, scope, parentBlueprint, _rootScope, }: TArguments);
 }
 export {};

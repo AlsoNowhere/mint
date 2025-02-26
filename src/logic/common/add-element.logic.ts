@@ -1,4 +1,5 @@
 import { Blueprint } from "../../models/blueprint/Blueprint.model";
+import { ForBlueprint } from "../../models/blueprint/ForBlueprint.model";
 
 import { TElement } from "../../types/TElement.type";
 
@@ -11,8 +12,10 @@ const getWhereToInsert = (
 ): Text | TElement | undefined => {
   for (let [i, blueprint] of childBlueprints.entries()) {
     if (i < blueprintIndex + 1) continue;
-    if (blueprint.collection instanceof Array) {
-      for (let contentBlueprint of blueprint.collection) {
+    const collection =
+      blueprint.collection || (blueprint as ForBlueprint).forListBlueprints;
+    if (collection instanceof Array) {
+      for (let contentBlueprint of collection) {
         const element = contentBlueprint.element;
         if (parentElement.contains(element ?? null)) {
           return element;

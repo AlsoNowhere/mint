@@ -7,7 +7,7 @@ export abstract class MintAttribute {
     this.cloneAttribute = cloneAttribute;
   }
 
-  cloneAttribute: () => MintAttribute;
+  cloneAttribute: (oldInstance?: MintAttribute) => MintAttribute;
 
   onGenerate?: TonGenerate;
   onRender?: TonRender;

@@ -2,11 +2,11 @@ import { deBracer } from "../../services/deBracer.service";
 
 import { TextBlueprint } from "../../models/blueprint/TextBlueprint.model";
 
-import { TRefresh } from "../../types/TRefresh.type";
+import { TonRefresh } from "../../types/MintAttributes/TonRefresh.type";
 
 import { _DevLogger_ } from "../../_DEV_/_DevLogger_";
 
-export const refreshTextNode: TRefresh = (blueprint: TextBlueprint) => {
+export const refreshTextNode: TonRefresh = (blueprint: TextBlueprint) => {
   const { element, textValue } = blueprint;
 
   /* Dev */
@@ -17,4 +17,6 @@ export const refreshTextNode: TRefresh = (blueprint: TextBlueprint) => {
     blueprint.scope,
     "Refresh - textNode"
   );
+
+  return { condition: false };
 };

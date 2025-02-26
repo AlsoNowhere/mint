@@ -7,16 +7,19 @@ import { MintNode } from "./MintNode.model";
 
 import { IProps } from "../../interfaces/IProps.interface";
 import { INode } from "../../interfaces/INode.interface";
+import { IAttributes } from "../../interfaces/IAttributes.interface";
 
 export class MintElement extends MintNode {
   element?: string;
   collection?: Array<INode>;
-  props: IProps;
+  // props: IProps;
+  attributes: IAttributes;
   scope: undefined;
 
   constructor(
     element: string,
-    props: null | IProps = null,
+    // props: null | IProps = null,
+    attributes: null | IAttributes = null,
     content: null | Array<INode>
   ) {
     super(
@@ -27,7 +30,8 @@ export class MintElement extends MintNode {
     );
 
     this.element = element;
-    this.props = props ?? {};
+    // this.props = props ?? {};
+    this.attributes = attributes ?? {};
   }
 
   public clone() {
@@ -37,7 +41,8 @@ export class MintElement extends MintNode {
     }
     return new MintElement(
       this.element ?? "<>",
-      Object.assign({}, this.props),
+      // Object.assign({}, this.props),
+      Object.assign({}, this.attributes),
       content
     );
   }

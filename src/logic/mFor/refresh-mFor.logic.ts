@@ -3,14 +3,12 @@ import { checkUniqueService } from "../../services/check-unique.service";
 import { recycleMForData } from "./recycleMForData.logic";
 import { addElement } from "../common/add-element.logic";
 import { matchElements } from "./match-elements.logic";
-import { generatemForBlueprint } from "./generate-mFor-Blueprint.logic";
 import { getParentElement } from "../common/get-parent-element.logic";
 import { resolvePropertyLookup } from "../../services/resolve-property-lookup.logic";
+import { generatemForBlueprint } from "./common/generate-for-blueprint.logic";
 
 import { Blueprint } from "../../models/blueprint/Blueprint.model";
 import { ForBlueprint } from "../../models/blueprint/ForBlueprint.model";
-import { MintElement } from "../../models/mint-nodes/MintElement.model";
-import { MintComponent } from "../../models/mint-nodes/MintComponent.model";
 import { ElementBlueprint } from "../../models/blueprint/ElementBlueprint.model";
 import { ComponentBlueprint } from "../../models/blueprint/ComponentBlueprint.model";
 
@@ -26,6 +24,7 @@ import { TRefresh } from "../../types/TRefresh.type";
 import { FOR_Type } from "../../enum/FOR_Type.enum";
 
 import { _DevLogger_ } from "../../_DEV_/_DevLogger_";
+import { getBlueprintIndex } from "../common/get-blueprint-index.logic";
 
 type AddElementsOptions = {
   childBlueprints: Array<Blueprint>;
@@ -34,8 +33,17 @@ type AddElementsOptions = {
 };
 
 const handleErrorsAndWarnings = (blueprint: ForBlueprint, mFor: I_mFor) => {
-  const { mintNode, collection, parentBlueprint, _rootScope, isSVG } =
-    blueprint;
+  const {
+    nodeToClone,
+    orderedProps,
+    props,
+    forListBlueprints,
+    parentBlueprint,
+    _rootScope,
+    isSVG,
+  } = blueprint;
+
+  const { blueprintIndex } = getBlueprintIndex(blueprint);
 
   const childBlueprints =
     parentBlueprint?.childBlueprints ??
@@ -80,12 +88,15 @@ const handleErrorsAndWarnings = (blueprint: ForBlueprint, mFor: I_mFor) => {
   return {
     forKey,
     forData,
+    blueprintIndex,
     parentElement,
-    mintNode,
+    nodeToClone,
+    orderedProps,
+    props,
     parentScope,
-    parentBlueprint,
-    collection,
+    forListBlueprints,
     childBlueprints,
+    parentBlueprint,
     _rootScope,
     isSVG,
   };
@@ -144,17 +155,19 @@ const rearrangeElements = (
 
 export const refreshMFor = (
   blueprint: ForBlueprint,
-  blueprintIndex: number,
   { _mFor, newlyInserted }: { _mFor: I_mFor; newlyInserted: boolean }
 ) => {
   const {
     forKey,
     forData,
+    blueprintIndex,
     parentElement,
-    mintNode,
+    nodeToClone,
+    orderedProps,
+    props,
     parentScope,
     parentBlueprint,
-    collection,
+    forListBlueprints,
     childBlueprints,
     _rootScope,
     isSVG,
@@ -173,12 +186,10 @@ export const refreshMFor = (
   // ** Find if each new item already exists on current list of childBlueprints.
   // ** If not then add the scope only. That way we can check which are already blueprinted
   // ** and blueprint the ones that aren't later.
-  // {
-
   for (let [i, item] of newList.entries()) {
     let newCurrentRender: Blueprint | undefined = undefined;
 
-    for (let x of collection) {
+    for (let x of forListBlueprints) {
       const { scope } = x;
       if (scope === undefined) continue;
       if (forKey === "_i") {
@@ -204,6 +215,8 @@ export const refreshMFor = (
     i++;
   }
 
+  // ** Here we take the newly sorted renders and make sure they are all Blueprints
+  // ** if not already.
   const forRenders: Array<ElementBlueprint | ComponentBlueprint> = [];
   for (let [i, x] of newCurrentForRenders.entries()) {
     if (x instanceof Blueprint) {
@@ -211,8 +224,11 @@ export const refreshMFor = (
     } else {
       forRenders.push(
         generatemForBlueprint(
-          mintNode as MintElement | MintComponent,
+          nodeToClone,
           parentScope,
+          orderedProps,
+          props,
+          nodeToClone.content,
           parentBlueprint,
           x,
           i,
@@ -238,7 +254,7 @@ export const refreshMFor = (
   }
 
   // ** Cycle through old list and if its not on the new list then remove this element.
-  for (let currentRender of collection) {
+  for (let currentRender of forListBlueprints) {
     if (
       !newCurrentForRenders.includes(currentRender) &&
       currentRender instanceof ElementBlueprint
@@ -249,7 +265,7 @@ export const refreshMFor = (
   }
 
   for (let targetRender of forRenders) {
-    if (!collection.includes(targetRender)) {
+    if (!forListBlueprints.includes(targetRender)) {
       const element = targetRender.element;
       if (element !== undefined) {
         addElement(element, parentElement, childBlueprints, blueprintIndex);
@@ -258,27 +274,29 @@ export const refreshMFor = (
   }
 
   for (let targetRender of forRenders) {
-    if (!collection.includes(targetRender)) {
-      targetRender.mintNode.render(
+    const { mintNode } = targetRender;
+    if (mintNode === null) continue;
+    if (!forListBlueprints.includes(targetRender)) {
+      mintNode.render(
         targetRender as Blueprint,
         parentElement,
         childBlueprints,
         blueprintIndex
       );
     } else {
-      const _refresh = targetRender.mintNode.refresh as TRefresh;
-      _refresh(targetRender as Blueprint, {
+      const _refresh = mintNode.refresh;
+      _refresh(targetRender as Blueprint, parentElement, {
         newlyInserted,
       });
     }
   }
 
   // ** We need to make sure that things are kept in sync.
-  // ** Here we tell the collection about the new list of Blueprints, either added or removed.
+  // ** Here we tell the forListBlueprints about the new list of Blueprints, either added or removed.
   {
-    collection.length = 0;
+    forListBlueprints.length = 0;
     for (let x of forRenders) {
-      collection.push(x);
+      forListBlueprints.push(x);
     }
   }
 

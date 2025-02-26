@@ -36,7 +36,7 @@ const externalRefreshBlueprint = (
   }
   currentlyTracking.addBlueprint(blueprint);
 
-  refreshBlueprints([blueprint]);
+  refreshBlueprints([blueprint], { newlyInserted: false });
 
   currentlyTracking.removeBlueprint(blueprint);
 };

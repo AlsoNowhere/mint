@@ -36,19 +36,10 @@ export class MintIf extends MintAttribute {
     this.onRefresh = function (
       blueprint: ElementBlueprint | ComponentBlueprint | IfBlueprint,
       parentElement,
-      parentBlueprintList,
-      blueprintIndex,
       options
     ) {
       const { _mIf } = this as MintIf;
-      return refreshMIf(
-        _mIf,
-        blueprint,
-        parentElement,
-        parentBlueprintList,
-        blueprintIndex,
-        options
-      );
+      return refreshMIf(_mIf, blueprint, parentElement, options);
     };
   }
 }
