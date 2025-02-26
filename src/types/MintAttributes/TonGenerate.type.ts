@@ -14,6 +14,7 @@ interface IOptions {
   props: IProps;
   parentScope: IMainScope;
   scope: IMainScope;
+  _children: null | Array<INode>;
   parentBlueprint: null | TParentBlueprint;
   _rootScope: IRootScope;
   isSVG: boolean;

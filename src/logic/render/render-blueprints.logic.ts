@@ -29,6 +29,25 @@ const renderBlueprint: TRender = (
     }
   }
 
+  if (blueprint.mintNode === null) {
+    const { collection } = blueprint;
+    if (collection) {
+      const indexes: Array<number> = [];
+      let i = blueprintIndex;
+      while (i - blueprintIndex < collection.length) {
+        indexes.push(i);
+        i++;
+      }
+      renderBlueprints(
+        collection,
+        parentElement,
+        parentChildBlueprints,
+        indexes
+      );
+    }
+    return;
+  }
+
   blueprint.mintNode.render(
     blueprint,
     parentElement,

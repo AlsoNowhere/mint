@@ -53,6 +53,7 @@ export const generateElementBlueprint: TGenerate = ({
       node,
       parentScope: scope,
       scope,
+      _children: null,
       parentBlueprint,
       _rootScope,
       isSVG,
@@ -76,7 +77,7 @@ export const generateElementBlueprint: TGenerate = ({
   });
 
   /* Dev */
-  // _DevLogger_("GENERATE", "ELEMENT", blueprint, parentBlueprint);
+  // _DevLogger_("GENERATE", "ELEMENT", blueprint);
 
   const _childBlueprints: Array<Blueprint> = [];
 

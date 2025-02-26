@@ -11,10 +11,20 @@ import { _DevLogger_ } from "../../_DEV_/_DevLogger_";
 
 export class MintFor extends MintAttribute {
   _mFor: I_mFor;
+  generated: boolean;
   blueprint: ForBlueprint;
 
   constructor(forValue: string) {
-    super(() => new MintFor(forValue));
+    super((oldInstance: MintFor) => {
+      const newInstance = new MintFor(forValue);
+      newInstance._mFor = oldInstance._mFor;
+      newInstance.generated = oldInstance.generated;
+      newInstance.blueprint = oldInstance.blueprint;
+
+      return newInstance;
+    });
+
+    this.generated = false;
 
     this.onGenerate = function ({ ...args }) {
       const that = this as MintFor;
@@ -32,7 +42,7 @@ export class MintFor extends MintAttribute {
       blueprintIndex
     ) {
       /* DEV */
-      // _DevLogger_("RENDER", "FOR", blueprint, blueprintIndex);
+      // _DevLogger_("RENDER", "FOR", blueprint, this);
 
       const that = this as MintFor;
 
@@ -48,18 +58,13 @@ export class MintFor extends MintAttribute {
       );
     };
 
-    this.onRefresh = function (
-      _,
-      __,
-      ___,
-      blueprintIndex: number,
-      { newlyInserted }
-    ) {
+    this.onRefresh = function (_, __, options) {
       const that = this as MintFor;
-      return refreshMFor(that.blueprint, blueprintIndex, {
+      refreshMFor(that.blueprint, {
         _mFor: that._mFor,
-        newlyInserted,
+        ...options,
       });
+      return { condition: false };
     };
   }
 }

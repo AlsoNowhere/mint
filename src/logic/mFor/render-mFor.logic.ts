@@ -1,6 +1,7 @@
 import { renderBlueprints } from "../render/render-blueprints.logic";
 
 import { Blueprint } from "../../models/blueprint/Blueprint.model";
+import { ForBlueprint } from "../../models/blueprint/ForBlueprint.model";
 
 import { MINT_ERROR } from "../../data/constants.data";
 
@@ -8,7 +9,7 @@ import { TElement } from "../../types/TElement.type";
 import { TShouldExit } from "../../types/TShouldExit.type";
 
 export const renderFor = (
-  blueprint: Blueprint,
+  blueprint: ForBlueprint,
   childBlueprints: Array<Blueprint>,
   parentElement: TElement,
   blueprintIndex: number
@@ -16,8 +17,8 @@ export const renderFor = (
   // <@ REMOVE FOR PRODUCTION
   if (
     blueprint === null ||
-    blueprint.collection === null ||
-    blueprint.collection === undefined
+    blueprint.forListBlueprints === null ||
+    blueprint.forListBlueprints === undefined
   ) {
     throw new Error(
       `${MINT_ERROR} Render - For - Wrong Blueprint sent to mFor.`
@@ -25,9 +26,9 @@ export const renderFor = (
   }
   // @>
 
-  const { collection } = blueprint;
+  const { forListBlueprints } = blueprint;
 
-  for (let x of collection) {
+  for (let x of forListBlueprints) {
     renderBlueprints([x], parentElement, childBlueprints, [blueprintIndex]);
   }
 

@@ -1,0 +1,11 @@
+import { Blueprint } from "../../../models/blueprint/Blueprint.model";
+import { ComponentBlueprint } from "../../../models/blueprint/ComponentBlueprint.model";
+import { ElementBlueprint } from "../../../models/blueprint/ElementBlueprint.model";
+import { MintComponent } from "../../../models/mint-nodes/MintComponent.model";
+import { MintElement } from "../../../models/mint-nodes/MintElement.model";
+import { IMainScope } from "../../../interfaces/IMainScope.interface";
+import { INode } from "../../../interfaces/INode.interface";
+import { IProps } from "../../../interfaces/IProps.interface";
+import { IRootScope } from "../../../interfaces/IRootScope.interface";
+import { TParentBlueprint } from "../../../types/TParentBlueprint.type";
+export declare const generatemForBlueprint: (nodeToClone: MintElement | MintComponent, scope: IMainScope, orderedProps: Array<string>, props: IProps, _children: null | Array<INode>, parentBlueprint: null | TParentBlueprint, data: Blueprint | Object | string | number, index: number, _rootScope: IRootScope, isSVG?: boolean) => ComponentBlueprint | ElementBlueprint;

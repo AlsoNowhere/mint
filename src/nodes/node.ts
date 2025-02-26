@@ -41,6 +41,7 @@ export const node = <T>(
     mintNode = new MintElement(element, props, content);
   } else {
     mintNode = element;
+    // (element as MintComponent)._children = content;
   }
 
   return new CreateNode(mintNode, props, content);

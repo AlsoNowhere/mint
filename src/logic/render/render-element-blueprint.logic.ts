@@ -24,7 +24,7 @@ export const renderElementBlueprint: TRender = (
   } = blueprint;
 
   /* Dev */
-  // _DevLogger_("RENDER", "ELEMENT", blueprint);
+  // _DevLogger_("RENDER", "ELEMENT", blueprint, blueprintIndex);
 
   if (element !== undefined) {
     renderAttributes(element, orderedAttributes, attributes, scope);

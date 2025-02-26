@@ -17,6 +17,7 @@ export const resolveMAttributesOnGenerate = ({
   props,
   parentScope,
   scope,
+  _children,
   parentBlueprint,
   _rootScope,
   isSVG,
@@ -29,6 +30,7 @@ export const resolveMAttributesOnGenerate = ({
   props: IProps;
   parentScope: IMainScope;
   scope: IMainScope;
+  _children: null | Array<INode>;
   parentBlueprint: TParentBlueprint | null;
   _rootScope: IRootScope;
   isSVG: boolean;
@@ -39,6 +41,7 @@ export const resolveMAttributesOnGenerate = ({
 
   for (let key of orderedProps) {
     const property = props[key];
+
     const resolver: TonGenerate = property.onGenerate;
 
     if (
@@ -54,6 +57,7 @@ export const resolveMAttributesOnGenerate = ({
           props,
           parentScope,
           scope,
+          _children,
           parentBlueprint,
           _rootScope,
           isSVG,

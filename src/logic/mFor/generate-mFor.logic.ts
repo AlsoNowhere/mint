@@ -1,13 +1,12 @@
 import { checkUniqueService } from "../../services/check-unique.service";
 import { removeFromOrderedAttributes } from "../../services/remove-from-ordered-attributes.service";
 
-import { generatemForBlueprint } from "./generate-mFor-Blueprint.logic";
 import { resolvePropertyLookup } from "../../services/resolve-property-lookup.logic";
+import { generatemForBlueprint } from "./common/generate-for-blueprint.logic";
 
 import { MintElement } from "../../models/mint-nodes/MintElement.model";
 import { MintComponent } from "../../models/mint-nodes/MintComponent.model";
 import { ForBlueprint } from "../../models/blueprint/ForBlueprint.model";
-import { Blueprint } from "../../models/blueprint/Blueprint.model";
 import { MintFor } from "../../models/mint-attributes/MintFor.model";
 import { ComponentBlueprint } from "../../models/blueprint/ComponentBlueprint.model";
 import { ElementBlueprint } from "../../models/blueprint/ElementBlueprint.model";
@@ -15,6 +14,8 @@ import { ElementBlueprint } from "../../models/blueprint/ElementBlueprint.model"
 import { I_mFor } from "../../interfaces/I_mFor.interface";
 import { IRootScope } from "../../interfaces/IRootScope.interface";
 import { IMainScope } from "../../interfaces/IMainScope.interface";
+import { IProps } from "../../interfaces/IProps.interface";
+import { INode } from "../../interfaces/INode.interface";
 
 import { MINT_ERROR, MINT_WARN } from "../../data/constants.data";
 
@@ -22,13 +23,20 @@ import { FOR_Type } from "../../enum/FOR_Type.enum";
 
 import { TParentBlueprint } from "../../types/TParentBlueprint.type";
 import { TonGenerate } from "../../types/MintAttributes/TonGenerate.type";
+import { refreshBlueprints } from "../refresh/refresh-blueprints.logic";
+import { TRefresh } from "../../types/TRefresh.type";
+import { refreshMFor } from "./refresh-mFor.logic";
+import { getBlueprintIndex } from "../common/get-blueprint-index.logic";
 
 const createmForObject = ({
   forKey,
   forValue,
   mForType,
-  mintNode,
+  nodeToClone,
+  _children,
   parentScope,
+  orderedProps,
+  props,
   parentBlueprint,
   _rootScope,
   isSVG,
@@ -36,8 +44,11 @@ const createmForObject = ({
   forKey: string;
   mForType?: FOR_Type;
   forValue: string;
-  mintNode: MintElement | MintComponent;
+  nodeToClone: MintElement | MintComponent;
+  _children: null | Array<INode>;
   parentScope: IMainScope;
+  orderedProps: Array<string>;
+  props: IProps;
   parentBlueprint: null | TParentBlueprint;
   _rootScope: IRootScope;
   isSVG: boolean;
@@ -71,8 +82,11 @@ const createmForObject = ({
   for (let [i, x] of forData.entries()) {
     currentForRenders.push(
       generatemForBlueprint(
-        mintNode,
+        nodeToClone,
         parentScope,
+        orderedProps,
+        props,
+        _children,
         parentBlueprint,
         x,
         i,
@@ -85,7 +99,7 @@ const createmForObject = ({
   return {
     forKey,
     forValue,
-    mintNode,
+    nodeToClone,
     scope: parentScope,
     forData,
     currentForRenders,
@@ -103,17 +117,20 @@ export const generateMFor: TonGenerate<{
   node,
   orderedProps,
   props,
+  _children,
   parentScope,
   parentBlueprint,
   _rootScope,
   isSVG,
 }) => {
-  const mintNode = node.mintNode;
+  const nodeToClone = node.mintNode;
+
+  if (mForInstance.generated) return { condition: false };
 
   // <@ REMOVE FOR PRODUCTION
   {
     if (props.mKey === undefined) {
-      console.error(mintNode);
+      console.error(nodeToClone);
       throw new Error(`${MINT_ERROR} mFor must have a mKey attribute`);
     }
   }
@@ -139,31 +156,53 @@ export const generateMFor: TonGenerate<{
   }
   // @>
 
+  mForInstance.generated = true;
+
   const mForType = props.mForType ?? FOR_Type.default;
 
-  removeFromOrderedAttributes(orderedProps, props, ["mKey", "mForType"]);
+  // removeFromOrderedAttributes(orderedProps, props, [
+  //   "mFor",
+  //   "mKey",
+  //   "mForType",
+  // ]);
 
   mForInstance._mFor = createmForObject({
     forKey,
     forValue,
     mForType,
-    mintNode: mintNode as MintElement | MintComponent,
+    nodeToClone: nodeToClone as MintElement | MintComponent,
+    _children,
     parentScope,
+    orderedProps,
+    props,
     parentBlueprint,
     _rootScope,
     isSVG,
   });
 
-  const collection = mForInstance._mFor.currentForRenders;
+  const forListBlueprints = mForInstance._mFor.currentForRenders;
+
+  const runRefresh: TRefresh = (blueprint: ForBlueprint, options) => {
+    // refreshBlueprints(blueprint.forListBlueprints);
+
+    refreshMFor(blueprint, {
+      _mFor: mForInstance._mFor,
+      ...options,
+    });
+  };
 
   mForInstance.blueprint = new ForBlueprint({
-    mintNode: mintNode as MintElement | MintComponent,
+    render: mForInstance.onRender,
+    // refresh: mForInstance.onRefresh,
+    refresh: runRefresh,
+    nodeToClone: nodeToClone as MintElement | MintComponent,
     orderedProps,
     props,
     scope: parentScope,
     parentBlueprint,
     _rootScope,
-    collection: collection as Array<Blueprint>,
+    forListBlueprints,
+    // collection: collection as Array<Blueprint>,
     isSVG: isSVG || undefined,
   });
 

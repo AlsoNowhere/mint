@@ -15,7 +15,7 @@ export const renderComponentBlueprint: TRender = (
   blueprintIndex
 ) => {
   /* Dev */
-  // _DevLogger_("RENDER", "COMPONENT", blueprint, blueprintIndex);
+  // _DevLogger_("RENDER", "COMPONENT", blueprint);
 
   const {
     element,

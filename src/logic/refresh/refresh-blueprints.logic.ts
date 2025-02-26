@@ -1,4 +1,3 @@
-import { getBlueprintIndex } from "../common/get-blueprint-index.logic";
 import { getParentElement } from "../common/get-parent-element.logic";
 
 import { Blueprint } from "../../models/blueprint/Blueprint.model";
@@ -8,23 +7,24 @@ import { TonRefresh } from "../../types/MintAttributes/TonRefresh.type";
 
 import { _DevLogger_ } from "../../_DEV_/_DevLogger_";
 
-const refreshBlueprint: TRefresh = (
-  blueprint: Blueprint,
-  options: { newlyInserted: boolean }
-) => {
+const refreshBlueprint: TRefresh = (blueprint, options) => {
   const parentElement = getParentElement(blueprint);
-  const { blueprintList, blueprintIndex } = getBlueprintIndex(blueprint);
 
   /* Dev */
   // _DevLogger_("REFRESH", "Blueprint", blueprint);
 
   const focusTarget = document.activeElement;
 
+  if (blueprint.mintNode === null) {
+    if (blueprint.refresh) {
+      blueprint.refresh(blueprint, { newlyInserted: options.newlyInserted });
+    }
+    return;
+  }
+
   const _refresh = blueprint.mintNode.refresh as TonRefresh;
 
-  _refresh(blueprint, parentElement, blueprintList, blueprintIndex, {
-    newlyInserted: options.newlyInserted,
-  });
+  _refresh(blueprint, parentElement, options);
 
   // ** Here we check if the Element that was refreshed was the activeElement (had focus).
   // ** If it was then we re add the focus if it has been lost.
@@ -37,8 +37,11 @@ const refreshBlueprint: TRefresh = (
   }
 };
 
-export const refreshBlueprints = (blueprints: Array<Blueprint>) => {
+export const refreshBlueprints = (
+  blueprints: Array<Blueprint>,
+  options: { newlyInserted: boolean }
+) => {
   for (let blueprint of blueprints) {
-    refreshBlueprint(blueprint, { newlyInserted: false });
+    refreshBlueprint(blueprint, options);
   }
 };

@@ -22,7 +22,13 @@ const handleResolverProperties = (
       configurable: true,
     });
   } else {
-    scope[key] = resolvePropertyLookup(value, parentScope);
+    const newValue = resolvePropertyLookup(value, parentScope);
+
+    // ** Here we check what the new value is going to be.
+    // ** If its undefined or null it means we don't want to change the default or previously
+    // ** defined value.
+    if (newValue === undefined || newValue === null) return;
+    scope[key] = newValue;
   }
 };
 
@@ -48,6 +54,7 @@ export const assignProps = (
 ) => {
   for (let key of orderedProps) {
     const value = props[key];
+
     if (isAttrType(key, "[", "]")) {
       const _key: string = key.substring(1, key.length - 1);
       bindingTemplateProp(scope, _key, value, parentScope);

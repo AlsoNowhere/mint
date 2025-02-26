@@ -36,6 +36,7 @@ export const generateComponentBlueprint: TGenerate = ({
   isSVG,
   useGivenScope,
 }) => {
+  // const { mintNode, content: _children } = node;
   const { mintNode, content: _children } = node;
   fixProps((mintNode as MintComponent).attributes);
   const mintComponent = mintNode as MintComponent;
@@ -64,7 +65,7 @@ export const generateComponentBlueprint: TGenerate = ({
     throw new Error(
       `${MINT_ERROR} Element sent to node() contains angle brackets "${element}". Use "${element.substring(
         1,
-        element.length - 2
+        element.length - 1
       )}" instead.`
     );
   }
@@ -108,15 +109,18 @@ export const generateComponentBlueprint: TGenerate = ({
     }
   }
 
-  // ** When a Component is defined, props are provided to it.
-  // ** Here we take those props and assign their values from the parent scope to this Component.
-  assignProps(componentScope, orderedProps ?? [], props ?? {}, parentScope);
+  if (!useGivenScope) {
+    // ** When a Component is defined, props are provided to it.
+    // ** Here we take those props and assign their values from the parent scope to this Component.
+    assignProps(componentScope, orderedProps ?? [], props ?? {}, parentScope);
+  }
 
   const commonValues = {
     node,
     htmlElement: newHTMLElement,
     parentScope,
     scope: componentScope,
+    _children,
     parentBlueprint,
     _rootScope,
     isSVG,
@@ -196,7 +200,6 @@ export const generateComponentBlueprint: TGenerate = ({
     isSVG,
   });
 
-  // ===
   // ** Check if the children content contains the "_children" keyword.
   // ** Using this allows the content of this child blueprint to use custom content passed into this parent Component.
   // ** E.g
@@ -210,7 +213,6 @@ export const generateComponentBlueprint: TGenerate = ({
       <div>Content</div>
     </main>
   */
-  //  ===
   const childBlueprints = resolveChildBlueprints(
     blueprint,
     _childBlueprints,

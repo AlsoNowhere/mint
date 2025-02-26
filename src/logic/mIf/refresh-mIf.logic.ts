@@ -61,8 +61,11 @@ const fromFalseNotBlueprintedToTrue = (
 
   // ** We need to replace this previous IfBlueprint as its not longer the correct context.
   if (parentBlueprint !== null) {
+    // ** When not at root element
     const { childBlueprints, collection } = parentBlueprint;
+
     if (childBlueprints !== undefined) {
+      // ** Child blueprints
       let index: number = -1;
       for (let [i, x] of childBlueprints.entries()) {
         if (x === ifBlueprint) {
@@ -71,7 +74,9 @@ const fromFalseNotBlueprintedToTrue = (
       }
       childBlueprints.splice(index, 1, newBlueprint);
     }
+
     if (collection !== undefined) {
+      // ** Collection
       let index: number = -1;
       for (let [i, x] of collection.entries()) {
         if (x === ifBlueprint) {
@@ -81,6 +86,7 @@ const fromFalseNotBlueprintedToTrue = (
       collection.splice(index, 1, newBlueprint);
     }
   } else {
+    // ** When at root element.
     const { _rootChildBlueprints } = blueprint._rootScope;
     let index: number = -1;
     for (let [i, x] of _rootChildBlueprints.entries()) {
@@ -189,12 +195,13 @@ export const refreshMIf = (
   mIf: I_mIf,
   blueprint: ElementBlueprint | ComponentBlueprint | IfBlueprint,
   parentElement: TElement,
-  parentBlueprintList: Array<Blueprint>,
-  blueprintIndex: number,
   options: {
     newlyInserted: boolean;
   }
 ) => {
+  const { blueprintList: parentBlueprintList, blueprintIndex } =
+    getBlueprintIndex(blueprint);
+
   const oldBlueprinted = mIf.blueprinted;
 
   const { newState, newlyInserted } = stateShift(
