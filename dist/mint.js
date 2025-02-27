@@ -1365,6 +1365,11 @@ const renderMTemplate = (blueprint, parentElement, parentChildBlueprints, bluepr
     let { options, templateGenerator, scopeLookup } = mintNode;
     if (scopeLookup !== undefined) {
         templateGenerator = scope[scopeLookup];
+        // <@ REMOVE FOR PRODUCTION
+        if (!(templateGenerator instanceof Function)) {
+            throw new Error(`${MINT_ERROR} -- node(template("target")) -- No function provided from "target". Make sure you write () => TMintContent not just TMintContent`);
+        }
+        // @>
     }
     const { conditionedBy } = options;
     blueprint.templateState = conditionedBy && scope[conditionedBy];
