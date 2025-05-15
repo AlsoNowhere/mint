@@ -16,9 +16,10 @@ export class Resolver<T = any> extends ScopeTransformer {
   constructor(callback: string | (() => T)) {
     super((scope, key) => {
       Object.defineProperty(scope, key, {
-        get: this.callback,
+        get: this.callback
       });
     });
+
     if (callback instanceof Function) {
       this.callback = callback;
     } else {

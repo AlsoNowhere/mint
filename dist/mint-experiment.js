@@ -348,8 +348,7 @@ var mint = (function (exports) {
 
     class MintNode {
         constructor(content, generate, render, refresh) {
-            this.content =
-                content instanceof Array ? content : content === null ? [] : [content];
+            this.content = content instanceof Array ? content : content === null ? [] : [content];
             this.generate = generate;
             this.render = render;
             this.refresh = refresh;
@@ -752,12 +751,12 @@ var mint = (function (exports) {
     }
 
     class ComponentBlueprint extends Blueprint {
-        constructor({ mintNode, fragment, element, orderedProps, props, orderedAttributes, attributes, scope, parentBlueprint, collection, childBlueprints, _rootScope, contentFor_children, }) {
+        constructor({ mintNode, fragment, element, orderedProps, props, orderedAttributes, attributes, scope, parentBlueprint, collection, childBlueprints, _rootScope, contentFor_children }) {
             super({
                 mintNode,
                 scope,
                 parentBlueprint,
-                _rootScope,
+                _rootScope
             });
             if (!!fragment)
                 this.fragment = fragment;
@@ -779,20 +778,18 @@ var mint = (function (exports) {
         }
     }
 
-    const generateComponentBlueprint = ({ node, orderedProps, props, scope: parentScope, parentBlueprint, _rootScope, isSVG, useGivenScope, }) => {
+    const generateComponentBlueprint = ({ node, orderedProps, props, scope: parentScope, parentBlueprint, _rootScope, isSVG, useGivenScope }) => {
         var _a, _b;
-        // const { mintNode, content: _children } = node;
         const { mintNode, content: _children } = node;
         fixProps(mintNode.attributes);
         const mintComponent = mintNode;
         const { element, content } = mintComponent;
         const attributes = cloneProps({
-            props: mintComponent.attributes,
+            props: mintComponent.attributes
         });
         const orderedAttributes = resolvePropsOrder(attributes);
         // <@ REMOVE FOR PRODUCTION
-        if (!(mintComponent.scope instanceof Function) &&
-            mintComponent.scope !== null) {
+        if (!(mintComponent.scope instanceof Function) && mintComponent.scope !== null) {
             throw new Error(`${MINT_ERROR} Mint Component -- scope -- must pass a constructor function for Component scope argument (second argument) i.e component("div", function(){}`);
         }
         // @>
@@ -847,7 +844,7 @@ var mint = (function (exports) {
             parentBlueprint,
             _rootScope,
             isSVG,
-            isComponent: true,
+            isComponent: true
         };
         {
             // ** Here we resolve the props of the Component.
@@ -879,7 +876,7 @@ var mint = (function (exports) {
             attributes,
             scope: componentScope,
             parentBlueprint,
-            _rootScope,
+            _rootScope
         });
         if (!!_children) {
             blueprint.contentFor_children = [];
@@ -900,7 +897,7 @@ var mint = (function (exports) {
             scope: componentScope,
             parentBlueprint: blueprint,
             _rootScope,
-            isSVG,
+            isSVG
         });
         // ** Check if the children content contains the "_children" keyword.
         // ** Using this allows the content of this child blueprint to use custom content passed into this parent Component.
@@ -1232,32 +1229,20 @@ var mint = (function (exports) {
     };
 
     const resolveMAttributesOnRefresh = (blueprint, parentElement, options) => {
-        const { orderedProps = [], props = {}, orderedAttributes = [], attributes = {}, } = blueprint;
+        const { orderedProps = [], props = {}, orderedAttributes = [], attributes = {} } = blueprint;
         let shouldExit = { condition: false, value: undefined };
         for (let key of orderedProps) {
             const property = props[key];
             const resolver = property.onRefresh;
-            if (shouldExit.condition === false &&
-                property instanceof MintAttribute &&
-                resolver instanceof Function) {
-                shouldExit = resolver.apply(property, [
-                    blueprint,
-                    parentElement,
-                    options,
-                ]);
+            if (shouldExit.condition === false && property instanceof MintAttribute && resolver instanceof Function) {
+                shouldExit = resolver.apply(property, [blueprint, parentElement, options]);
             }
         }
         for (let key of orderedAttributes) {
             const property = attributes[key];
             const resolver = property.onRefresh;
-            if (shouldExit.condition === false &&
-                property instanceof MintAttribute &&
-                resolver instanceof Function) {
-                shouldExit = resolver.apply(property, [
-                    blueprint,
-                    parentElement,
-                    options,
-                ]);
+            if (shouldExit.condition === false && property instanceof MintAttribute && resolver instanceof Function) {
+                shouldExit = resolver.apply(property, [blueprint, parentElement, options]);
             }
         }
         return shouldExit;
@@ -1351,15 +1336,15 @@ var mint = (function (exports) {
         }
     }
 
-    const generateMTemplate = ({ node, scope, parentBlueprint, _rootScope, }) => {
-        const mintNode = node.mintNode;
+    const generateMTemplate = ({ node, scope, parentBlueprint, _rootScope }) => {
+        const { mintNode } = node;
         const mintTemplate = mintNode;
         return new TemplateBlueprint({
             mintNode: mintTemplate,
             templateState: null,
             scope,
             parentBlueprint,
-            _rootScope,
+            _rootScope
         });
     };
 
@@ -1530,6 +1515,54 @@ var mint = (function (exports) {
 
     const template = (optionsOrGenerator, templateGenerator) => {
         return new MintTemplate(optionsOrGenerator, templateGenerator);
+    };
+
+    class ContextBlueprint extends Blueprint {
+        constructor({ mintNode, scope, parentBlueprint, _rootScope }) {
+            super({ mintNode, scope, parentBlueprint, _rootScope });
+            this.fragment = true;
+        }
+    }
+
+    const generateMContext = ({ node, scope, parentBlueprint, _rootScope }) => {
+        const { mintNode } = node;
+        const mintContext = mintNode;
+        if (!scope._mintBlueprint.contexts) {
+            scope._mintBlueprint.contexts = {};
+        }
+        Object.assign(scope._mintBlueprint.contexts, mintContext.contexts);
+        const blueprint = new ContextBlueprint({ mintNode: mintContext, scope, parentBlueprint, _rootScope });
+        return blueprint;
+    };
+
+    const renderMContext = (blueprint, parentElement, parentChildBlueprints, blueprintIndex) => {
+        const { mintNode, scope, parentBlueprint, _rootScope } = blueprint;
+        const { collection: content } = mintNode;
+        const collection = generateBlueprints({
+            nodes: content,
+            scope,
+            parentBlueprint,
+            _rootScope
+        });
+        for (let x of collection) {
+            renderBlueprints([x], parentElement, parentChildBlueprints, [blueprintIndex]);
+        }
+        blueprint.collection = collection;
+    };
+
+    class MintContext extends MintNode {
+        constructor(contexts, initialContent) {
+            super(null, generateMContext, renderMContext);
+            this.contexts = contexts;
+            const collection = createMintText(initialContent);
+            this.collection = collection;
+        }
+        addChildren() { }
+        addProperties() { }
+    }
+
+    const context = (contexts, content) => {
+        return new MintContext(contexts, content);
     };
 
     class ElementBlueprint extends Blueprint {
@@ -1708,7 +1741,12 @@ var mint = (function (exports) {
         }
     }
 
-    const node = (element, props = null, initialContent = null) => {
+    function node(element, props = null, initialContent = null) {
+        // export const node = <T extends Object>(
+        //   element: string | MintComponent | MintTemplate,
+        //   props: null | (T & IProps) = null,
+        //   initialContent: null | TRawContent = null
+        // ): CreateNode<T, MintElement | MintComponent | MintTemplate> => {
         // <@ REMOVE FOR PRODUCTION
         if (element === "<>" && props !== null) {
             const acceptableProps = ["mIf", "mFor", "mKey"];
@@ -1732,7 +1770,7 @@ var mint = (function (exports) {
             // (element as MintComponent)._children = content;
         }
         return new CreateNode(mintNode, props, content);
-    };
+    }
 
     const resolvePropTypes = (orderedProps, props, mintComponent, parentScope) => {
         var _a;
@@ -2779,7 +2817,7 @@ var mint = (function (exports) {
         constructor(callback) {
             super((scope, key) => {
                 Object.defineProperty(scope, key, {
-                    get: this.callback,
+                    get: this.callback
                 });
             });
             if (callback instanceof Function) {
@@ -2790,6 +2828,32 @@ var mint = (function (exports) {
                     return _get(this, callback);
                 };
             }
+        }
+    }
+
+    const getContexts = (blueprint, target) => {
+        if (blueprint === undefined)
+            return undefined;
+        if (blueprint.contexts) {
+            if (blueprint.contexts[target]) {
+                return blueprint.contexts[target];
+            }
+        }
+        if (blueprint.parentBlueprint === null)
+            return undefined;
+        return getContexts(blueprint.parentBlueprint, target);
+    };
+    class GetContext extends ScopeTransformer {
+        constructor(target) {
+            super((scope, key) => {
+                Object.defineProperty(scope, key, {
+                    get: () => {
+                        const value = getContexts(scope._mintBlueprint, target);
+                        return value;
+                    }
+                });
+            });
+            this.target = target;
         }
     }
 
@@ -2824,6 +2888,7 @@ var mint = (function (exports) {
         return quickElement("div", attributesOrContent, _content);
     };
 
+    exports.GetContext = GetContext;
     exports.MintComponent = MintComponent;
     exports.MintElement = MintElement;
     exports.MintScope = MintScope;
@@ -2832,6 +2897,7 @@ var mint = (function (exports) {
     exports.UpwardRef = UpwardRef;
     exports.app = app;
     exports.component = component;
+    exports.context = context;
     exports.deleteApp = deleteApp;
     exports.div = div;
     exports.mExtend = mExtend;

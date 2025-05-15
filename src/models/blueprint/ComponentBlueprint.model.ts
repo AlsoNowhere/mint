@@ -36,6 +36,7 @@ export class ComponentBlueprint extends Blueprint {
   collection?: Array<Blueprint>;
   childBlueprints?: Array<Blueprint>;
   contentFor_children?: Array<INode>;
+  contexts?: Record<string, string | Object>;
   isSVG?: true;
   _dev: "Component";
 
@@ -52,13 +53,13 @@ export class ComponentBlueprint extends Blueprint {
     collection,
     childBlueprints,
     _rootScope,
-    contentFor_children,
+    contentFor_children
   }: TAttributes) {
     super({
       mintNode,
       scope,
       parentBlueprint,
-      _rootScope,
+      _rootScope
     });
 
     if (!!fragment) this.fragment = fragment;

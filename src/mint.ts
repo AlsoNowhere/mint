@@ -3,6 +3,7 @@ export { deleteApp } from "./app/delete-app";
 
 export { component } from "./nodes/component";
 export { template } from "./nodes/template";
+export { context } from "./nodes/context";
 export { node } from "./nodes/node";
 
 export { resolvePropTypes } from "./logic/prop-types/resolve-prop-types.service";
@@ -19,6 +20,7 @@ export { Store } from "./store/Store";
 export { MintScope } from "./models/MintScope.model";
 export { UpwardRef } from "./models/UpwardRef.model";
 export { Resolver } from "./models/scope-transformers/Resolver.model";
+export { GetContext } from "./models/scope-transformers/GetContext.model";
 
 export { span } from "./quick-elements/span.element";
 export { div } from "./quick-elements/div.element";

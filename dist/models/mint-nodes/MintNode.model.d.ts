@@ -7,7 +7,7 @@ export declare class MintNode {
     content: Array<INode>;
     props?: IProps;
     generate: TGenerate;
-    render: TRender;
-    refresh: TonRefresh;
-    constructor(content: null | INode | Array<INode>, generate: TGenerate, render: TRender, refresh: TonRefresh);
+    render?: TRender;
+    refresh?: TonRefresh;
+    constructor(content: null | INode | Array<INode>, generate: TGenerate, render?: TRender, refresh?: TonRefresh);
 }

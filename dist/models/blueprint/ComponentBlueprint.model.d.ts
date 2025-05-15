@@ -32,8 +32,9 @@ export declare class ComponentBlueprint extends Blueprint {
     collection?: Array<Blueprint>;
     childBlueprints?: Array<Blueprint>;
     contentFor_children?: Array<INode>;
+    contexts?: Record<string, string | Object>;
     isSVG?: true;
     _dev: "Component";
-    constructor({ mintNode, fragment, element, orderedProps, props, orderedAttributes, attributes, scope, parentBlueprint, collection, childBlueprints, _rootScope, contentFor_children, }: TAttributes);
+    constructor({ mintNode, fragment, element, orderedProps, props, orderedAttributes, attributes, scope, parentBlueprint, collection, childBlueprints, _rootScope, contentFor_children }: TAttributes);
 }
 export {};
