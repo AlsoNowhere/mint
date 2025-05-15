@@ -9,17 +9,11 @@ export class MintNode {
   content: Array<INode>;
   props?: IProps;
   generate: TGenerate;
-  render: TRender;
-  refresh: TonRefresh;
+  render?: TRender;
+  refresh?: TonRefresh;
 
-  constructor(
-    content: null | INode | Array<INode>,
-    generate: TGenerate,
-    render: TRender,
-    refresh: TonRefresh
-  ) {
-    this.content =
-      content instanceof Array ? content : content === null ? [] : [content];
+  constructor(content: null | INode | Array<INode>, generate: TGenerate, render?: TRender, refresh?: TonRefresh) {
+    this.content = content instanceof Array ? content : content === null ? [] : [content];
     this.generate = generate;
     this.render = render;
     this.refresh = refresh;

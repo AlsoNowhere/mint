@@ -28,6 +28,7 @@ const handleResolverProperties = (
     // ** If its undefined or null it means we don't want to change the default or previously
     // ** defined value.
     if (newValue === undefined || newValue === null) return;
+
     scope[key] = newValue;
   }
 };
