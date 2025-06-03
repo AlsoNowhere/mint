@@ -11,11 +11,7 @@ describe("mFor - Components - Object values", () => {
       const rootElement = document.body;
       const rootScope = { list: testData };
       const Basic = component("div", null, null, "{value}");
-      const content = node(
-        "div",
-        null,
-        node(Basic, { mFor: mFor("list"), mKey: "_i" })
-      );
+      const content = node("div", null, node(Basic, { mFor: mFor("list"), mKey: "_i" }));
 
       // ** Act
       app(rootElement, rootScope, content);
@@ -32,17 +28,12 @@ describe("mFor - Components - Object values", () => {
 
   describe("Cannot add mFor to Component attributes definitions", () => {
     test("Should error as appropriate", () => {
-      const run = () => {
+      const runTest = () => {
         // ** Arrange
         const testData = ["One", "Two", "Three"].map((x) => ({ value: x }));
         const rootElement = document.body;
         const rootScope = { list: testData };
-        const BasicComponent = component(
-          "div",
-          null,
-          { mFor: mFor("list"), mKey: "_i" },
-          "{value}"
-        );
+        const BasicComponent = component("div", null, { mFor: mFor("list"), mKey: "_i" }, "{value}");
         const content = node(BasicComponent);
 
         // ** Act
@@ -50,7 +41,7 @@ describe("mFor - Components - Object values", () => {
       };
 
       // ** Assert
-      expect(run).toThrow(
+      expect(runTest).toThrow(
         "MINT ERROR -- Cannot add mFor directly to Components attribute in Component definition."
       );
     });

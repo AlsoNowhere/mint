@@ -6,6 +6,7 @@ import { matchElements } from "./match-elements.logic";
 import { getParentElement } from "../common/get-parent-element.logic";
 import { resolvePropertyLookup } from "../../services/resolve-property-lookup.logic";
 import { generatemForBlueprint } from "./common/generate-for-blueprint.logic";
+import { getBlueprintIndex } from "../common/get-blueprint-index.logic";
 
 import { Blueprint } from "../../models/blueprint/Blueprint.model";
 import { ForBlueprint } from "../../models/blueprint/ForBlueprint.model";
@@ -19,12 +20,10 @@ import { MINT_ERROR } from "../../data/constants.data";
 
 import { TElement } from "../../types/TElement.type";
 import { TShouldExit } from "../../types/TShouldExit.type";
-import { TRefresh } from "../../types/TRefresh.type";
 
 import { FOR_Type } from "../../enum/FOR_Type.enum";
 
 import { _DevLogger_ } from "../../_DEV_/_DevLogger_";
-import { getBlueprintIndex } from "../common/get-blueprint-index.logic";
 
 type AddElementsOptions = {
   childBlueprints: Array<Blueprint>;
@@ -33,21 +32,11 @@ type AddElementsOptions = {
 };
 
 const handleErrorsAndWarnings = (blueprint: ForBlueprint, mFor: I_mFor) => {
-  const {
-    nodeToClone,
-    orderedProps,
-    props,
-    forListBlueprints,
-    parentBlueprint,
-    _rootScope,
-    isSVG,
-  } = blueprint;
+  const { nodeToClone, orderedProps, props, forListBlueprints, parentBlueprint, _rootScope, isSVG } = blueprint;
 
   const { blueprintIndex } = getBlueprintIndex(blueprint);
 
-  const childBlueprints =
-    parentBlueprint?.childBlueprints ??
-    (_rootScope._rootChildBlueprints as Array<Blueprint>);
+  const childBlueprints = parentBlueprint?.childBlueprints ?? (_rootScope._rootChildBlueprints as Array<Blueprint>);
 
   const parentScope = parentBlueprint?.scope ?? _rootScope;
 
@@ -60,9 +49,7 @@ const handleErrorsAndWarnings = (blueprint: ForBlueprint, mFor: I_mFor) => {
 
   // <@ REMOVE FOR PRODUCTION
   if (!(protoForData instanceof Array) && protoForData !== undefined) {
-    throw new Error(
-      `${MINT_ERROR} Must pass in an Array or undefined to mFor (mFor: "${mFor.forValue}")`
-    );
+    throw new Error(`${MINT_ERROR} Must pass in an Array or undefined to mFor (mFor: "${mFor.forValue}")`);
   }
   // @>
 
@@ -98,7 +85,7 @@ const handleErrorsAndWarnings = (blueprint: ForBlueprint, mFor: I_mFor) => {
     childBlueprints,
     parentBlueprint,
     _rootScope,
-    isSVG,
+    isSVG
   };
 };
 
@@ -113,22 +100,14 @@ const changeElementPosition = (
   if (element === undefined) return;
   const { parentElement } = element;
   if (requiredIndex >= forRenders.length - 1) {
-    addElement(
-      element,
-      options.parentElement,
-      options.childBlueprints,
-      options.blueprintIndex
-    );
+    addElement(element, options.parentElement, options.childBlueprints, options.blueprintIndex);
   } else {
     const targetElement = allElements[requiredIndex];
     parentElement?.insertBefore(element, targetElement);
   }
 };
 
-const rearrangeElements = (
-  forRenders: Array<ElementBlueprint | ComponentBlueprint>,
-  options: AddElementsOptions
-) => {
+const rearrangeElements = (forRenders: Array<ElementBlueprint | ComponentBlueprint>, options: AddElementsOptions) => {
   const allElements: Array<TElement> = [];
   for (let x of [...options.parentElement.children]) {
     for (let y of forRenders) {
@@ -170,7 +149,7 @@ export const refreshMFor = (
     forListBlueprints,
     childBlueprints,
     _rootScope,
-    isSVG,
+    isSVG
   } = handleErrorsAndWarnings(blueprint, _mFor);
 
   _mFor.forData = forData;
@@ -228,7 +207,7 @@ export const refreshMFor = (
           parentScope,
           orderedProps,
           props,
-          nodeToClone.content,
+          _mFor._children,
           parentBlueprint,
           x,
           i,
@@ -255,10 +234,7 @@ export const refreshMFor = (
 
   // ** Cycle through old list and if its not on the new list then remove this element.
   for (let currentRender of forListBlueprints) {
-    if (
-      !newCurrentForRenders.includes(currentRender) &&
-      currentRender instanceof ElementBlueprint
-    ) {
+    if (!newCurrentForRenders.includes(currentRender) && currentRender instanceof ElementBlueprint) {
       const element = currentRender.element;
       element?.parentElement?.removeChild(element);
     }
@@ -277,16 +253,10 @@ export const refreshMFor = (
     const { mintNode } = targetRender;
     if (mintNode === null) continue;
     if (!forListBlueprints.includes(targetRender)) {
-      mintNode.render(
-        targetRender as Blueprint,
-        parentElement,
-        childBlueprints,
-        blueprintIndex
-      );
+      mintNode.render?.(targetRender as Blueprint, parentElement, childBlueprints, blueprintIndex);
     } else {
-      const _refresh = mintNode.refresh;
-      _refresh(targetRender as Blueprint, parentElement, {
-        newlyInserted,
+      mintNode.refresh?.(targetRender as Blueprint, parentElement, {
+        newlyInserted
       });
     }
   }
@@ -303,11 +273,11 @@ export const refreshMFor = (
   rearrangeElements(forRenders, {
     childBlueprints,
     parentElement,
-    blueprintIndex,
+    blueprintIndex
   });
 
   return {
     condition: true,
-    value: blueprint,
+    value: blueprint
   } as TShouldExit;
 };

@@ -11,6 +11,7 @@ import { MINT_ERROR } from "../../../data/constants.data";
 import { TElement } from "../../../types/TElement.type";
 
 import { _DevLogger_ } from "../../../_DEV_/_DevLogger_";
+import { Blueprint } from "../../../models/blueprint/Blueprint.model";
 
 const setAttribute = (
   element: TElement,
@@ -26,14 +27,7 @@ const setAttribute = (
   // ** Events are attributes defined like: "(attr)".
   const isEvent = isAttrType(key, "(", ")");
   if (isEvent) {
-    renderEventAttributes(
-      element,
-      key,
-      value,
-      orderedAttributes,
-      attributes,
-      scope
-    );
+    renderEventAttributes(element, key, value, orderedAttributes, attributes, scope);
   }
 
   // ** Value binding attributes are defined like "[attr]".
@@ -51,21 +45,24 @@ const setAttribute = (
 };
 
 export const renderAttributes = (
-  element: TElement,
-  orderedAttributes: null | Array<string>,
-  attributes: IAttributes,
-  scope: Object
+  // element: TElement,
+  // orderedAttributes: null | Array<string>,
+  // attributes: IAttributes,
+  // scope: Object
+  blueprint: Blueprint
 ) => {
+  const { orderedAttributes, attributes, scope } = blueprint;
+
+  const element = blueprint.element as TElement;
+
   /* DEV */
   // _DevLogger_("RENDER", "ATTRIBUTES", orderedAttributes, { element });
 
-  if (orderedAttributes === null) return;
+  if (attributes === undefined || orderedAttributes === null) return;
 
   // <@ REMOVE FOR PRODUCTION
   if (orderedAttributes === undefined)
-    throw new Error(
-      `${MINT_ERROR} Attributes cannot be undefined, only null or object`
-    );
+    throw new Error(`${MINT_ERROR} Attributes cannot be undefined, only null or object`);
   // @>
 
   // ** Loop over the attributes and add them in turn.

@@ -40,16 +40,11 @@ describe("mIf - Components", () => {
 
   describe("Cannot add mIf to Component attributes definitions", () => {
     test("Should error as appropriate", () => {
-      const run = () => {
+      const runTest = () => {
         // ** Arrange
         const rootElement = document.body;
         const rootScope = { case: true };
-        const BasicComponent = component(
-          "div",
-          null,
-          { mIf: mIf("case") },
-          "Content"
-        );
+        const BasicComponent = component("div", null, { mIf: mIf("case") }, "Content");
         const content = node(BasicComponent);
 
         // ** Act
@@ -57,9 +52,7 @@ describe("mIf - Components", () => {
       };
 
       // ** Assert
-      expect(run).toThrow(
-        "MINT ERROR -- Cannot add mIf directly to Components attribute in Component definition."
-      );
+      expect(runTest).toThrow("MINT ERROR -- Cannot add mIf directly to Components attribute in Component definition.");
     });
   });
 
@@ -69,21 +62,14 @@ describe("mIf - Components", () => {
         // ** Arrange
         const rootElement = document.body;
         const rootScope = { case: true };
-        const BasicComponent = component(
-          "div",
-          null,
-          { mIf: mIf("case") },
-          "Content"
-        );
+        const BasicComponent = component("div", null, { mIf: mIf("case") }, "Content");
         const content = node(BasicComponent, { mIf: mIf("case") });
 
         // ** Act
         app(rootElement, rootScope, content);
       };
 
-      expect(runTest).toThrow(
-        "MINT ERROR -- Cannot add mIf directly to Components attribute in Component definition."
-      );
+      expect(runTest).toThrow("MINT ERROR -- Cannot add mIf directly to Components attribute in Component definition.");
     });
   });
 });

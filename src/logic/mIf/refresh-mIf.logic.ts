@@ -56,7 +56,7 @@ const fromFalseNotBlueprintedToTrue = (
     scope,
     parentBlueprint,
     _rootScope,
-    isSVG,
+    isSVG
   });
 
   // ** We need to replace this previous IfBlueprint as its not longer the correct context.
@@ -101,10 +101,7 @@ const fromFalseNotBlueprintedToTrue = (
 
   const { blueprintList, blueprintIndex } = getBlueprintIndex(newBlueprint);
 
-  parentElement !== undefined &&
-    renderBlueprints([newBlueprint], parentElement, blueprintList, [
-      blueprintIndex,
-    ]);
+  parentElement !== undefined && renderBlueprints([newBlueprint], parentElement, blueprintList, [blueprintIndex]);
 
   return { newState, newlyInserted };
 };
@@ -122,14 +119,16 @@ const fromFalseToTrue = (
   }
   if (collection !== undefined) {
     for (let x of collection) {
-      renderBlueprints([x], parentElement, parentBlueprintList, [
-        blueprintIndex,
-      ]);
+      renderBlueprints([x], parentElement, parentBlueprintList, [blueprintIndex]);
     }
   }
 };
 
 const fromTrueToFalse = (blueprint: ElementBlueprint | ComponentBlueprint) => {
+  const { isComponent, scope } = blueprint;
+  if (isComponent) {
+    scope.onremove?.({ scope });
+  }
   removeList([blueprint]);
 };
 
@@ -162,15 +161,11 @@ const stateShift = (
       // ** WAS NOT previously rendered -> Add
       if (mIf.blueprinted === false) {
         // ** WAS NOT previously blueprinted -> Blueprint first, then Add
-        return fromFalseNotBlueprintedToTrue(
-          blueprint as IfBlueprint,
-          parentElement,
-          {
-            mIf,
-            newState,
-            newlyInserted,
-          }
-        );
+        return fromFalseNotBlueprintedToTrue(blueprint as IfBlueprint, parentElement, {
+          mIf,
+          newState,
+          newlyInserted
+        });
       } else {
         // ** WAS previously blueprinted -> Add back
         fromFalseToTrue(
@@ -199,18 +194,11 @@ export const refreshMIf = (
     newlyInserted: boolean;
   }
 ) => {
-  const { blueprintList: parentBlueprintList, blueprintIndex } =
-    getBlueprintIndex(blueprint);
+  const { blueprintList: parentBlueprintList, blueprintIndex } = getBlueprintIndex(blueprint);
 
   const oldBlueprinted = mIf.blueprinted;
 
-  const { newState, newlyInserted } = stateShift(
-    blueprint,
-    parentElement,
-    parentBlueprintList,
-    blueprintIndex,
-    mIf
-  );
+  const { newState, newlyInserted } = stateShift(blueprint, parentElement, parentBlueprintList, blueprintIndex, mIf);
 
   options.newlyInserted = newlyInserted ?? false;
 

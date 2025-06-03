@@ -2,7 +2,7 @@ const config = {
   testEnvironment: "jsdom",
   verbose: true,
   testPathIgnorePatterns: [
-    "/node_modules/",
+    "/node_modules/"
 
     /*
 
@@ -30,6 +30,7 @@ const config = {
     // "./tests/unit-tests/mRef",
     // "./tests/unit-tests/mTemplate",
     // "./tests/unit-tests/prop-types",
+    // "./tests/unit-tests/quick-elements",
     // "./tests/unit-tests/refresh",
     // "./tests/unit-tests/render",
     // "./tests/unit-tests/Resolver",
@@ -96,6 +97,7 @@ const config = {
     // "./tests/unit-tests/mFor/components/data",
     // "./tests/unit-tests/mFor/components/loop-over-objects",
     // "./tests/unit-tests/mFor/components/loop-over-strings",
+    // "./tests/unit-tests/mFor/components/that-has-children",
 
     // "./tests/unit-tests/mFor/moving-item/moving-end-to-start",
     // "./tests/unit-tests/mFor/moving-item/moving-middle-to-end",
@@ -108,6 +110,7 @@ const config = {
     // "./tests/unit-tests/mFor/refresh/add-item-to-start",
     // "./tests/unit-tests/mFor/refresh/add-several-items",
     // "./tests/unit-tests/mFor/refresh/no-changes",
+    // "./tests/unit-tests/mFor/refresh/preserving_children",
     // "./tests/unit-tests/mFor/refresh/remove-item-at-end",
     // "./tests/unit-tests/mFor/refresh/remove-item-at-middle",
     // "./tests/unit-tests/mFor/refresh/remove-item-at-start",
@@ -118,7 +121,7 @@ const config = {
     // "./tests/unit-tests/mFor/loop-over-strings",
     // "./tests/unit-tests/mFor/loop-over-with-events",
     // "./tests/unit-tests/mFor/mFor-with-siblings",
-    // "./tests/unit-tests/mFor/simple-list",
+    // "./tests/unit-tests/mFor/simple-list"
 
     // "./tests/unit-tests/mIf/refresh/change-false-to-true",
     // "./tests/unit-tests/mIf/refresh/change-true-to-false",
@@ -141,11 +144,16 @@ const config = {
 
     // "./tests/unit-tests/prop-types/define-prop-types",
 
+    // "./tests/unit-tests/quick-elements/div",
+    // "./tests/unit-tests/quick-elements/span",
+
     // "./tests/unit-tests/refresh/app/changing-content-app",
     // "./tests/unit-tests/refresh/app/changing-content-element",
     // "./tests/unit-tests/refresh/app/refresh-app-basic",
 
-    // "./tests/unit-tests/refresh/element/refresh-attributes",
+    // "./tests/unit-tests/refresh/element/refresh-attributes"
+
+    // "./tests/unit-tests/refresh/store/refresh-store"
 
     // "./tests/unit-tests/render/render-elements",
 
@@ -159,7 +167,7 @@ const config = {
     // "./tests/unit-tests/storylines/forms",
 
     // ** Always miss
-  ],
+  ]
 };
 
 module.exports = config;

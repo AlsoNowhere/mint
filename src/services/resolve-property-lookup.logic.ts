@@ -13,7 +13,9 @@ import { MINT_WARN } from "../data/constants.data";
 
 export const resolvePropertyLookup = (target: string, scope: IMainScope) => {
   if (target === "_children") {
-    return scope._mintBlueprint.contentFor_children?.length;
+    const childrenContent = scope._mintBlueprint._childrenContent;
+    const contentLength = childrenContent?.length ?? 0;
+    return contentLength > 0;
   }
 
   let _value = scope;
@@ -22,9 +24,7 @@ export const resolvePropertyLookup = (target: string, scope: IMainScope) => {
   for (let x of lookups) {
     // <@ REMOVE FOR PRODUCTION
     if (!(_value instanceof Object)) {
-      console.warn(
-        `${MINT_WARN} while attempting to parse value "{${target}}" a non object was found -> ${_value}.`
-      );
+      console.warn(`${MINT_WARN} while attempting to parse value "{${target}}" a non object was found -> ${_value}.`);
       return "";
     }
     // @>

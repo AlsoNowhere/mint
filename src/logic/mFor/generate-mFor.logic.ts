@@ -39,7 +39,7 @@ const createmForObject = ({
   props,
   parentBlueprint,
   _rootScope,
-  isSVG,
+  isSVG
 }: {
   forKey: string;
   mForType?: FOR_Type;
@@ -56,9 +56,7 @@ const createmForObject = ({
   const initialForData = resolvePropertyLookup(forValue, parentScope);
 
   if (!(initialForData instanceof Array) || initialForData === undefined) {
-    throw new Error(
-      `${MINT_ERROR} Must pass in an Array or undefined to mFor (mFor: "${forValue}")`
-    );
+    throw new Error(`${MINT_ERROR} Must pass in an Array or undefined to mFor (mFor: "${forValue}")`);
   }
 
   // ** Here we run a check against the mKey to check there are no duplicates.
@@ -105,6 +103,7 @@ const createmForObject = ({
     currentForRenders,
     oldForDataLength: forData.length,
     mForType,
+    _children
   };
 };
 
@@ -121,7 +120,7 @@ export const generateMFor: TonGenerate<{
   parentScope,
   parentBlueprint,
   _rootScope,
-  isSVG,
+  isSVG
 }) => {
   const nodeToClone = node.mintNode;
 
@@ -141,18 +140,14 @@ export const generateMFor: TonGenerate<{
   // <@ REMOVE FOR PRODUCTION
   {
     if (forKey.includes(" ")) {
-      console.warn(
-        `${MINT_WARN} mKey value defined with a space, this may be a mistake. Value: "${forKey}".`
-      );
+      console.warn(`${MINT_WARN} mKey value defined with a space, this may be a mistake. Value: "${forKey}".`);
     }
   }
   // @>
 
   // <@ REMOVE FOR PRODUCTION
   if (forValue.includes(" ")) {
-    console.warn(
-      `${MINT_WARN} mFor value defined with a space, this may be a mistake. Value: "${forValue}".`
-    );
+    console.warn(`${MINT_WARN} mFor value defined with a space, this may be a mistake. Value: "${forValue}".`);
   }
   // @>
 
@@ -177,7 +172,7 @@ export const generateMFor: TonGenerate<{
     props,
     parentBlueprint,
     _rootScope,
-    isSVG,
+    isSVG
   });
 
   const forListBlueprints = mForInstance._mFor.currentForRenders;
@@ -187,7 +182,7 @@ export const generateMFor: TonGenerate<{
 
     refreshMFor(blueprint, {
       _mFor: mForInstance._mFor,
-      ...options,
+      ...options
     });
   };
 
@@ -203,11 +198,11 @@ export const generateMFor: TonGenerate<{
     _rootScope,
     forListBlueprints,
     // collection: collection as Array<Blueprint>,
-    isSVG: isSVG || undefined,
+    isSVG: isSVG || undefined
   });
 
   return {
     condition: true,
-    value: mForInstance.blueprint,
+    value: mForInstance.blueprint
   };
 };

@@ -6,14 +6,14 @@ describe("Mount an app with data as null", () => {
 
   test("Should error", () => {
     // ** Arrange
-    const toRun = () => {
+    const runTest = () => {
       app(document.body, null, node("div", null, ""));
     };
 
     // ** Act
 
     // ** Assert
-    expect(toRun).toThrow(
+    expect(runTest).toThrow(
       "app -- rootScope -- Cannot pass null as root scope. Root scope is defined against generic T as can't autofill from null."
     );
   });

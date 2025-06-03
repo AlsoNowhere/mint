@@ -14,25 +14,13 @@ import { _DevLogger_ } from "../../_DEV_/_DevLogger_";
 export const generateMIf: TonGenerate<{
   mIfInstance: MintIf;
   _ifValue: string;
-}> = ({
-  mIfInstance,
-  _ifValue,
-  node,
-  orderedProps,
-  props,
-  parentScope,
-  parentBlueprint,
-  _rootScope,
-  isSVG,
-}) => {
+}> = ({ mIfInstance, _ifValue, node, orderedProps, props, parentScope, parentBlueprint, _rootScope, isSVG }) => {
   const { mintNode, content } = node;
   const mintElement = mintNode as MintElement | MintComponent;
 
   // <@ REMOVE FOR PRODUCTION
   if (_ifValue.includes(" ")) {
-    console.warn(
-      `${MINT_WARN} mIf value defined with a space, this may be a mistake. Value: "${_ifValue}".`
-    );
+    console.warn(`${MINT_WARN} mIf value defined with a space, this may be a mistake. Value: "${_ifValue}".`);
   }
   // @>
 
@@ -43,7 +31,7 @@ export const generateMIf: TonGenerate<{
   const inverse = _ifValue.charAt(0) === "!";
   const ifValue = inverse ? _ifValue.substring(1) : _ifValue;
 
-  const result = resolvePropertyLookup(ifValue, parentScope);
+  const result = !!resolvePropertyLookup(ifValue, parentScope);
 
   const state = inverse ? !result : !!result;
 
@@ -53,7 +41,7 @@ export const generateMIf: TonGenerate<{
     state,
     scope: parentScope,
     blueprinted: state,
-    mintNode: mintNode as MintElement | MintComponent,
+    mintNode: mintNode as MintElement | MintComponent
   };
 
   /* Dev */
@@ -68,7 +56,7 @@ export const generateMIf: TonGenerate<{
       parentBlueprint,
       _rootScope,
       content,
-      isSVG,
+      isSVG
     });
 
     /* Dev */
