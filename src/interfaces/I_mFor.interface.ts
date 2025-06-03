@@ -5,6 +5,7 @@ import { ComponentBlueprint } from "../models/blueprint/ComponentBlueprint.model
 
 import { IForData } from "./IForData.interface";
 import { IMainScope } from "./IMainScope.interface";
+import { INode } from "./INode.interface";
 
 import { FOR_Type } from "../enum/FOR_Type.enum";
 
@@ -17,4 +18,5 @@ export interface I_mFor {
   currentForRenders: Array<ElementBlueprint | ComponentBlueprint>;
   oldForDataLength: null | number;
   mForType?: FOR_Type;
+  _children: null | Array<INode>;
 }

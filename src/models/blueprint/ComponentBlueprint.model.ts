@@ -23,10 +23,11 @@ type TAttributes = {
   collection?: Array<Blueprint>;
   childBlueprints?: Array<Blueprint>;
   _rootScope: IRootScope;
-  contentFor_children?: Array<INode>;
+  _childrenContent?: Array<INode>;
 };
 
 export class ComponentBlueprint extends Blueprint {
+  isComponent: true;
   fragment?: true;
   element?: TElement;
   orderedProps: Array<string>;
@@ -35,7 +36,7 @@ export class ComponentBlueprint extends Blueprint {
   attributes: IAttributes;
   collection?: Array<Blueprint>;
   childBlueprints?: Array<Blueprint>;
-  contentFor_children?: Array<INode>;
+  _childrenContent?: Array<INode>;
   contexts?: Record<string, string | Object>;
   isSVG?: true;
   _dev: "Component";
@@ -53,7 +54,7 @@ export class ComponentBlueprint extends Blueprint {
     collection,
     childBlueprints,
     _rootScope,
-    contentFor_children
+    _childrenContent
   }: TAttributes) {
     super({
       mintNode,
@@ -61,6 +62,7 @@ export class ComponentBlueprint extends Blueprint {
       parentBlueprint,
       _rootScope
     });
+    this.isComponent = true;
 
     if (!!fragment) this.fragment = fragment;
     if (!!element) this.element = element;
@@ -72,7 +74,7 @@ export class ComponentBlueprint extends Blueprint {
 
     if (!!collection) this.collection = collection;
     if (!!childBlueprints) this.childBlueprints = childBlueprints;
-    if (!!contentFor_children) this.contentFor_children = contentFor_children;
+    if (!!_childrenContent) this._childrenContent = _childrenContent;
     if (element instanceof SVGElement) this.isSVG = true;
 
     this._dev = "Component";

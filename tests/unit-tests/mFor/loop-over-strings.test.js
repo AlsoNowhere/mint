@@ -10,15 +10,7 @@ describe("mFor - String values", () => {
       const testData = ["One", "Two", "Three"];
       const rootElement = document.body;
       const rootScope = { list: testData };
-      const content = node(
-        "div",
-        null,
-        node(
-          "div",
-          { mFor: mFor("list"), mKey: "_i", "[data-index]": "_i" },
-          "{_x}"
-        )
-      );
+      const content = node("div", null, node("div", { mFor: mFor("list"), mKey: "_i", "[data-index]": "_i" }, "{_x}"));
 
       // ** Act
       app(rootElement, rootScope, content);
@@ -48,19 +40,15 @@ describe("mFor - String values", () => {
       const testData = ["One", "Two", "Three"];
       const rootElement = document.body;
       const rootScope = { list: testData };
-      const content = node(
-        "div",
-        null,
-        node("div", { mFor: mFor("list"), "[data-index]": "_i" }, "{_x}")
-      );
+      const content = node("div", null, node("div", { mFor: mFor("list"), "[data-index]": "_i" }, "{_x}"));
 
       // ** Act
-      const run = () => {
+      const runTest = () => {
         app(rootElement, rootScope, content);
       };
 
       // ** Assert
-      expect(run).toThrow("MINT ERROR -- mFor must have a mKey attribute");
+      expect(runTest).toThrow("MINT ERROR -- mFor must have a mKey attribute");
     });
   });
 });

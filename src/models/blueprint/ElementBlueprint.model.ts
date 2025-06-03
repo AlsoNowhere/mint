@@ -22,6 +22,7 @@ type TAttributes = {
 };
 
 export class ElementBlueprint extends Blueprint {
+  isComponent: false;
   fragment?: true;
   element?: TElement;
   orderedAttributes: Array<string>;
@@ -41,14 +42,16 @@ export class ElementBlueprint extends Blueprint {
     parentBlueprint,
     _rootScope,
     collection,
-    childBlueprints,
+    childBlueprints
   }: TAttributes) {
     super({
       mintNode,
       scope,
       parentBlueprint,
-      _rootScope,
+      _rootScope
     });
+
+    this.isComponent = false;
 
     if (!!fragment) this.fragment = fragment;
     if (!!element) this.element = element;

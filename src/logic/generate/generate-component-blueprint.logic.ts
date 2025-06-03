@@ -166,25 +166,25 @@ export const generateComponentBlueprint: TGenerate = ({
   });
 
   if (!!_children) {
-    blueprint.contentFor_children = [];
+    blueprint._childrenContent = [];
     for (let x of _children) {
-      blueprint.contentFor_children.push(cloneContent(x));
+      blueprint._childrenContent.push(cloneContent(x));
     }
   }
 
   componentScope._mintBlueprint = blueprint as Blueprint;
 
   /* Dev */
-  // _DevLogger_("GENERATE", "COMPONENT", blueprint, parentBlueprint);
+  // _DevLogger_("GENERATE", "COMPONENT", blueprint);
 
   // ** Clone the content so that each Component has unique content from the original definition.
-  const _content: Array<INode> = [];
+  const clonedContent: Array<INode> = [];
   for (let x of content) {
-    _content.push(cloneContent(x));
+    clonedContent.push(cloneContent(x));
   }
 
   const _childBlueprints = generateBlueprints({
-    nodes: _content,
+    nodes: clonedContent,
     scope: componentScope,
     parentBlueprint: blueprint,
     _rootScope,

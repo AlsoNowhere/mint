@@ -7,6 +7,7 @@ export interface IMainScope {
   oneach?: TLifecycle;
   onafterinsert?: TLifecycle;
   onaftereach?: TLifecycle;
+  onremove?: TLifecycle;
 
   [x: string]: any;
 }

@@ -14,20 +14,14 @@ export const renderElementBlueprint: TRender = (
   parentChildBlueprints,
   blueprintIndex
 ) => {
-  const {
-    element,
-    orderedAttributes,
-    attributes,
-    scope,
-    collection,
-    childBlueprints,
-  } = blueprint;
+  const { element, collection, childBlueprints } = blueprint;
 
   /* Dev */
   // _DevLogger_("RENDER", "ELEMENT", blueprint, blueprintIndex);
 
   if (element !== undefined) {
-    renderAttributes(element, orderedAttributes, attributes, scope);
+    // renderAttributes(element, orderedAttributes, attributes, scope);
+    renderAttributes(blueprint);
   }
 
   // ** Here we add the Element to the parentElement, if there is an Element.
@@ -38,9 +32,7 @@ export const renderElementBlueprint: TRender = (
   // ** Here we add the collection of Elements if there is a collection.
   if (collection !== undefined) {
     for (let x of collection) {
-      renderBlueprints([x], parentElement, parentChildBlueprints, [
-        blueprintIndex,
-      ]);
+      renderBlueprints([x], parentElement, parentChildBlueprints, [blueprintIndex]);
     }
   }
 

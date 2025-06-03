@@ -17,14 +17,7 @@ export const renderComponentBlueprint: TRender = (
   /* Dev */
   // _DevLogger_("RENDER", "COMPONENT", blueprint);
 
-  const {
-    element,
-    orderedAttributes,
-    attributes,
-    scope,
-    collection,
-    childBlueprints,
-  } = blueprint;
+  const { element, scope, collection, childBlueprints } = blueprint;
 
   // ** LIFECYCLE CALL
   scope.oninit?.({ scope });
@@ -32,7 +25,8 @@ export const renderComponentBlueprint: TRender = (
   scope.oneach?.({ scope });
 
   if (element !== undefined) {
-    renderAttributes(element, orderedAttributes, attributes, scope);
+    // renderAttributes(element, orderedAttributes, attributes, scope);
+    renderAttributes(blueprint);
   }
 
   // ** Here we add the Component Element to the parentElement, if there is a Component Element.
@@ -43,9 +37,7 @@ export const renderComponentBlueprint: TRender = (
   // ** Here we add the collection of Component Elements if there is a collection.
   if (collection !== undefined) {
     for (let x of collection) {
-      renderBlueprints([x], parentElement, parentChildBlueprints, [
-        blueprintIndex,
-      ]);
+      renderBlueprints([x], parentElement, parentChildBlueprints, [blueprintIndex]);
     }
   }
 

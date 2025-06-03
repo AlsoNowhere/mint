@@ -13,9 +13,7 @@ describe("Define a Component", () => {
         };
 
         // ** Assert
-        expect(act).toThrow(
-          "MINT ERROR -- Cannot define content as 'string' when Component is a Fragment (<>)."
-        );
+        expect(act).toThrow("MINT ERROR -- Cannot define content as 'string' when Component is a Fragment (<>).");
       });
     });
   });
@@ -28,21 +26,19 @@ describe("Define a Component", () => {
       };
 
       // ** Assert
-      expect(act).toThrow(
-        "MINT ERROR -- Cannot add mIf directly to Components attribute in Component definition."
-      );
+      expect(act).toThrow("MINT ERROR -- Cannot add mIf directly to Components attribute in Component definition.");
     });
   });
 
   describe("When mFor is in Component attributes", () => {
     test("Should error", () => {
       // ** Arrange
-      const act = () => {
+      const runTest = () => {
         component("div", null, { mFor: mFor("test") }, "content");
       };
 
       // ** Assert
-      expect(act).toThrow(
+      expect(runTest).toThrow(
         "MINT ERROR -- Cannot add mFor directly to Components attribute in Component definition."
       );
     });

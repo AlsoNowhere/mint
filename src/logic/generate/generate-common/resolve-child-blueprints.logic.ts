@@ -13,13 +13,11 @@ import { TParentBlueprint } from "../../../types/TParentBlueprint.type";
 // ** This is then replaced with cloned content from the Component definition.
 // ** This saved content can then be used to replace "_children" where it it defined.
 
-const getContent = (
-  blueprint: ComponentBlueprint
-): undefined | Array<INode> => {
-  const { parentBlueprint, contentFor_children } = blueprint;
+const getContent = (blueprint: ComponentBlueprint): undefined | Array<INode> => {
+  const { parentBlueprint, _childrenContent } = blueprint;
 
   // ** If the content is valid then return this.
-  if (contentFor_children !== undefined) return contentFor_children;
+  if (_childrenContent !== undefined) return _childrenContent;
 
   // ** If the parent does not have valid content then pass undefined, which will be ignored to prevent errors.
   if (parentBlueprint === null) return;
@@ -34,10 +32,11 @@ export const resolveChildBlueprints = (
   isSVG: boolean
 ): Array<Blueprint> => {
   const { scope, _rootScope } = blueprint;
+  let childrenContent: undefined | Array<INode>;
 
   // ** Here we get the content that should be used to replace "_children".
   // ** This is pre Blueprint generated rated.
-  const childrenContent = getContent(blueprint as ComponentBlueprint);
+  childrenContent = getContent(blueprint as ComponentBlueprint);
 
   if (childrenContent !== undefined) {
     // ** If this is the keyword "_children" then replace this with childrenContent.
@@ -55,7 +54,7 @@ export const resolveChildBlueprints = (
           scope,
           parentBlueprint: blueprint as TParentBlueprint,
           _rootScope,
-          isSVG,
+          isSVG
         });
 
         // ** Now we insert the Blueprints, replacing "_children".
