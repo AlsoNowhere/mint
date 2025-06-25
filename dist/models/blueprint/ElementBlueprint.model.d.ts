@@ -18,6 +18,7 @@ type TAttributes = {
     childBlueprints?: Array<Blueprint>;
 };
 export declare class ElementBlueprint extends Blueprint {
+    isComponent: false;
     fragment?: true;
     element?: TElement;
     orderedAttributes: Array<string>;
@@ -26,6 +27,6 @@ export declare class ElementBlueprint extends Blueprint {
     childBlueprints?: Array<Blueprint>;
     isSVG: boolean;
     _dev: "Element";
-    constructor({ mintNode, fragment, element, orderedAttributes, attributes, scope, parentBlueprint, _rootScope, collection, childBlueprints, }: TAttributes);
+    constructor({ mintNode, fragment, element, orderedAttributes, attributes, scope, parentBlueprint, _rootScope, collection, childBlueprints }: TAttributes);
 }
 export {};

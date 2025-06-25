@@ -10,6 +10,7 @@ export declare class MintScope implements IScope {
     oneach?: TLifecycle;
     onafterinsert?: TLifecycle;
     onaftereach?: TLifecycle;
+    onremove?: TLifecycle;
     _mintBlueprint: Blueprint;
     _rootScope: IRootScope;
     _store?: Store;

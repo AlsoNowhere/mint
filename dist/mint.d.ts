@@ -10,6 +10,7 @@ export { mExtend } from "./mAttributes/mExtend";
 export { mIf } from "./mAttributes/mIf";
 export { mFor } from "./mAttributes/mFor";
 export { mRef } from "./mAttributes/mRef";
+export { mProps } from "./mAttributes/mProps";
 export { Store } from "./store/Store";
 export { MintScope } from "./models/MintScope.model";
 export { UpwardRef } from "./models/UpwardRef.model";

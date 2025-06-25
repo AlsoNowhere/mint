@@ -7,7 +7,7 @@ export declare const refreshMIf: (mIf: I_mIf, blueprint: ElementBlueprint | Comp
     newlyInserted: boolean;
 }) => {
     condition: boolean;
-    value: ComponentBlueprint | ElementBlueprint | IfBlueprint;
+    value: ElementBlueprint | ComponentBlueprint | IfBlueprint;
 } | {
     condition: boolean;
     value: undefined;
