@@ -24,6 +24,7 @@ import { TShouldExit } from "../../types/TShouldExit.type";
 import { FOR_Type } from "../../enum/FOR_Type.enum";
 
 import { _DevLogger_ } from "../../_DEV_/_DevLogger_";
+import { removeList } from "../common/remove-list.logic";
 
 type AddElementsOptions = {
   childBlueprints: Array<Blueprint>;
@@ -234,12 +235,18 @@ export const refreshMFor = (
 
   // ** Cycle through old list and if its not on the new list then remove this element.
   for (let currentRender of forListBlueprints) {
-    if (!newCurrentForRenders.includes(currentRender) && currentRender instanceof ElementBlueprint) {
-      const element = currentRender.element;
-      element?.parentElement?.removeChild(element);
+    if (!newCurrentForRenders.includes(currentRender)) {
+      if (!currentRender.fragment) {
+        const element = currentRender.element;
+        element?.parentElement?.removeChild(element);
+      } else {
+        const collection = currentRender.collection as Array<Blueprint>;
+        removeList(collection);
+      }
     }
   }
 
+  // ** Cycle through new list and if its not on the old list then add this element.
   for (let targetRender of forRenders) {
     if (!forListBlueprints.includes(targetRender)) {
       const element = targetRender.element;

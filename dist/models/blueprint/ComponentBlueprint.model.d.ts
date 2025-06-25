@@ -20,9 +20,10 @@ type TAttributes = {
     collection?: Array<Blueprint>;
     childBlueprints?: Array<Blueprint>;
     _rootScope: IRootScope;
-    contentFor_children?: Array<INode>;
+    _childrenContent?: Array<INode>;
 };
 export declare class ComponentBlueprint extends Blueprint {
+    isComponent: true;
     fragment?: true;
     element?: TElement;
     orderedProps: Array<string>;
@@ -31,10 +32,10 @@ export declare class ComponentBlueprint extends Blueprint {
     attributes: IAttributes;
     collection?: Array<Blueprint>;
     childBlueprints?: Array<Blueprint>;
-    contentFor_children?: Array<INode>;
+    _childrenContent?: Array<INode>;
     contexts?: Record<string, string | Object>;
     isSVG?: true;
     _dev: "Component";
-    constructor({ mintNode, fragment, element, orderedProps, props, orderedAttributes, attributes, scope, parentBlueprint, collection, childBlueprints, _rootScope, contentFor_children }: TAttributes);
+    constructor({ mintNode, fragment, element, orderedProps, props, orderedAttributes, attributes, scope, parentBlueprint, collection, childBlueprints, _rootScope, _childrenContent }: TAttributes);
 }
 export {};

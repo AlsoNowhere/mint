@@ -223,7 +223,9 @@ var mint = (function (exports) {
     const resolvePropertyLookup = (target, scope) => {
         var _a;
         if (target === "_children") {
-            return (_a = scope._mintBlueprint.contentFor_children) === null || _a === void 0 ? void 0 : _a.length;
+            const childrenContent = scope._mintBlueprint._childrenContent;
+            const contentLength = (_a = childrenContent === null || childrenContent === void 0 ? void 0 : childrenContent.length) !== null && _a !== void 0 ? _a : 0;
+            return contentLength > 0;
         }
         let _value = scope;
         const lookups = target.split(".");
@@ -592,10 +594,10 @@ var mint = (function (exports) {
     // ** This is then replaced with cloned content from the Component definition.
     // ** This saved content can then be used to replace "_children" where it it defined.
     const getContent = (blueprint) => {
-        const { parentBlueprint, contentFor_children } = blueprint;
+        const { parentBlueprint, _childrenContent } = blueprint;
         // ** If the content is valid then return this.
-        if (contentFor_children !== undefined)
-            return contentFor_children;
+        if (_childrenContent !== undefined)
+            return _childrenContent;
         // ** If the parent does not have valid content then pass undefined, which will be ignored to prevent errors.
         if (parentBlueprint === null)
             return;
@@ -604,9 +606,10 @@ var mint = (function (exports) {
     };
     const resolveChildBlueprints = (blueprint, childBlueprints, isSVG) => {
         const { scope, _rootScope } = blueprint;
+        let childrenContent;
         // ** Here we get the content that should be used to replace "_children".
         // ** This is pre Blueprint generated rated.
-        const childrenContent = getContent(blueprint);
+        childrenContent = getContent(blueprint);
         if (childrenContent !== undefined) {
             // ** If this is the keyword "_children" then replace this with childrenContent.
             // ** As these are blueprints then they will need to be cloned and unique at the render phase.
@@ -622,7 +625,7 @@ var mint = (function (exports) {
                         scope,
                         parentBlueprint: blueprint,
                         _rootScope,
-                        isSVG,
+                        isSVG
                     });
                     // ** Now we insert the Blueprints, replacing "_children".
                     childBlueprints.splice(i, 0, ..._children);
@@ -751,13 +754,14 @@ var mint = (function (exports) {
     }
 
     class ComponentBlueprint extends Blueprint {
-        constructor({ mintNode, fragment, element, orderedProps, props, orderedAttributes, attributes, scope, parentBlueprint, collection, childBlueprints, _rootScope, contentFor_children }) {
+        constructor({ mintNode, fragment, element, orderedProps, props, orderedAttributes, attributes, scope, parentBlueprint, collection, childBlueprints, _rootScope, _childrenContent }) {
             super({
                 mintNode,
                 scope,
                 parentBlueprint,
                 _rootScope
             });
+            this.isComponent = true;
             if (!!fragment)
                 this.fragment = fragment;
             if (!!element)
@@ -770,8 +774,8 @@ var mint = (function (exports) {
                 this.collection = collection;
             if (!!childBlueprints)
                 this.childBlueprints = childBlueprints;
-            if (!!contentFor_children)
-                this.contentFor_children = contentFor_children;
+            if (!!_childrenContent)
+                this._childrenContent = _childrenContent;
             if (element instanceof SVGElement)
                 this.isSVG = true;
             this._dev = "Component";
@@ -879,21 +883,21 @@ var mint = (function (exports) {
             _rootScope
         });
         if (!!_children) {
-            blueprint.contentFor_children = [];
+            blueprint._childrenContent = [];
             for (let x of _children) {
-                blueprint.contentFor_children.push(cloneContent(x));
+                blueprint._childrenContent.push(cloneContent(x));
             }
         }
         componentScope._mintBlueprint = blueprint;
         /* Dev */
-        // _DevLogger_("GENERATE", "COMPONENT", blueprint, parentBlueprint);
+        // _DevLogger_("GENERATE", "COMPONENT", blueprint);
         // ** Clone the content so that each Component has unique content from the original definition.
-        const _content = [];
+        const clonedContent = [];
         for (let x of content) {
-            _content.push(cloneContent(x));
+            clonedContent.push(cloneContent(x));
         }
         const _childBlueprints = generateBlueprints({
-            nodes: _content,
+            nodes: clonedContent,
             scope: componentScope,
             parentBlueprint: blueprint,
             _rootScope,
@@ -1029,10 +1033,17 @@ var mint = (function (exports) {
             }
         }
     };
-    const renderAttributes = (element, orderedAttributes, attributes, scope) => {
+    const renderAttributes = (
+    // element: TElement,
+    // orderedAttributes: null | Array<string>,
+    // attributes: IAttributes,
+    // scope: Object
+    blueprint) => {
+        const { orderedAttributes, attributes, scope } = blueprint;
+        const element = blueprint.element;
         /* DEV */
         // _DevLogger_("RENDER", "ATTRIBUTES", orderedAttributes, { element });
-        if (orderedAttributes === null)
+        if (attributes === undefined || orderedAttributes === null)
             return;
         // <@ REMOVE FOR PRODUCTION
         if (orderedAttributes === undefined)
@@ -1058,13 +1069,14 @@ var mint = (function (exports) {
         /* Dev */
         // _DevLogger_("RENDER", "COMPONENT", blueprint);
         var _a, _b, _c, _d, _e;
-        const { element, orderedAttributes, attributes, scope, collection, childBlueprints, } = blueprint;
+        const { element, scope, collection, childBlueprints } = blueprint;
         // ** LIFECYCLE CALL
         (_a = scope.oninit) === null || _a === void 0 ? void 0 : _a.call(scope, { scope });
         (_b = scope.oninsert) === null || _b === void 0 ? void 0 : _b.call(scope, { scope });
         (_c = scope.oneach) === null || _c === void 0 ? void 0 : _c.call(scope, { scope });
         if (element !== undefined) {
-            renderAttributes(element, orderedAttributes, attributes, scope);
+            // renderAttributes(element, orderedAttributes, attributes, scope);
+            renderAttributes(blueprint);
         }
         // ** Here we add the Component Element to the parentElement, if there is a Component Element.
         if (element !== undefined) {
@@ -1073,9 +1085,7 @@ var mint = (function (exports) {
         // ** Here we add the collection of Component Elements if there is a collection.
         if (collection !== undefined) {
             for (let x of collection) {
-                renderBlueprints([x], parentElement, parentChildBlueprints, [
-                    blueprintIndex,
-                ]);
+                renderBlueprints([x], parentElement, parentChildBlueprints, [blueprintIndex]);
             }
         }
         // ** Here we handle the children of this Component, if it has any.
@@ -1566,13 +1576,14 @@ var mint = (function (exports) {
     };
 
     class ElementBlueprint extends Blueprint {
-        constructor({ mintNode, fragment, element, orderedAttributes, attributes, scope, parentBlueprint, _rootScope, collection, childBlueprints, }) {
+        constructor({ mintNode, fragment, element, orderedAttributes, attributes, scope, parentBlueprint, _rootScope, collection, childBlueprints }) {
             super({
                 mintNode,
                 scope,
                 parentBlueprint,
-                _rootScope,
+                _rootScope
             });
+            this.isComponent = false;
             if (!!fragment)
                 this.fragment = fragment;
             if (!!element)
@@ -1676,11 +1687,12 @@ var mint = (function (exports) {
     };
 
     const renderElementBlueprint = (blueprint, parentElement, parentChildBlueprints, blueprintIndex) => {
-        const { element, orderedAttributes, attributes, scope, collection, childBlueprints, } = blueprint;
+        const { element, collection, childBlueprints } = blueprint;
         /* Dev */
         // _DevLogger_("RENDER", "ELEMENT", blueprint, blueprintIndex);
         if (element !== undefined) {
-            renderAttributes(element, orderedAttributes, attributes, scope);
+            // renderAttributes(element, orderedAttributes, attributes, scope);
+            renderAttributes(blueprint);
         }
         // ** Here we add the Element to the parentElement, if there is an Element.
         if (element !== undefined) {
@@ -1689,9 +1701,7 @@ var mint = (function (exports) {
         // ** Here we add the collection of Elements if there is a collection.
         if (collection !== undefined) {
             for (let x of collection) {
-                renderBlueprints([x], parentElement, parentChildBlueprints, [
-                    blueprintIndex,
-                ]);
+                renderBlueprints([x], parentElement, parentChildBlueprints, [blueprintIndex]);
             }
         }
         // ** Here we handle the children of this Element, if it has any.
@@ -1815,50 +1825,26 @@ var mint = (function (exports) {
         }
     };
 
-    class Store {
-        constructor(initialData) {
-            if (!(initialData instanceof Object)) {
-                throw "You must provide an Object to create a new Store.";
-            }
-            const entries = Object.entries(initialData);
-            for (let [key, value] of entries) {
-                if (value instanceof ScopeTransformer) {
-                    value.transform(this, key);
-                }
-                else {
-                    this[key] = value;
-                }
-            }
-            this._component = null;
-            this._keys = Object.keys(initialData);
-            this._data = initialData;
-            Object.seal(this);
+    const externalRefreshBlueprint = (scopeOrBlueprintOrStore) => {
+        let blueprint = undefined;
+        const { _mintBlueprint } = scopeOrBlueprintOrStore;
+        const { _component } = scopeOrBlueprintOrStore;
+        // ** Passed a Blueprint directly
+        if (scopeOrBlueprintOrStore instanceof Blueprint) {
+            blueprint = scopeOrBlueprintOrStore;
         }
-        connect(scope) {
-            this._component = scope;
-            scope._store = this;
-            for (let key of this._keys) {
-                const value = this._data[key];
-                if (value instanceof ScopeTransformer) {
-                    value.transform(scope, key);
-                }
-                else {
-                    Object.defineProperty(scope, key, {
-                        get: () => this[key],
-                        set: (_value) => (this[key] = _value),
-                    });
-                }
-            }
+        // ** Passed IScope
+        else if (!!_mintBlueprint) {
+            blueprint = _mintBlueprint;
         }
-    }
-
-    const externalRefreshBlueprint = (scopeOrBlueprint) => {
-        var _a;
-        const blueprint = scopeOrBlueprint instanceof Blueprint
-            ? scopeOrBlueprint
-            : scopeOrBlueprint instanceof Store
-                ? (_a = scopeOrBlueprint._component) === null || _a === void 0 ? void 0 : _a._mintBlueprint
-                : scopeOrBlueprint._mintBlueprint;
+        // ** Passed Store
+        else if (_component !== undefined) {
+            // ** If this Store is not currently connected to a Component then do nothing.
+            if (_component === null) {
+                return;
+            }
+            blueprint = _component._mintBlueprint;
+        }
         // <@ REMOVE FOR PRODUCTION
         if (blueprint === undefined) {
             throw new Error(`${MINT_ERROR} refresh called using an invalid scope. Blueprint is undefined.`);
@@ -1978,7 +1964,7 @@ var mint = (function (exports) {
         }
     }
 
-    const generateMIf = ({ mIfInstance, _ifValue, node, orderedProps, props, parentScope, parentBlueprint, _rootScope, isSVG, }) => {
+    const generateMIf = ({ mIfInstance, _ifValue, node, orderedProps, props, parentScope, parentBlueprint, _rootScope, isSVG }) => {
         const { mintNode, content } = node;
         const mintElement = mintNode;
         // <@ REMOVE FOR PRODUCTION
@@ -1991,7 +1977,7 @@ var mint = (function (exports) {
         }
         const inverse = _ifValue.charAt(0) === "!";
         const ifValue = inverse ? _ifValue.substring(1) : _ifValue;
-        const result = resolvePropertyLookup(ifValue, parentScope);
+        const result = !!resolvePropertyLookup(ifValue, parentScope);
         const state = inverse ? !result : !!result;
         mIfInstance._mIf = {
             inverse,
@@ -1999,7 +1985,7 @@ var mint = (function (exports) {
             state,
             scope: parentScope,
             blueprinted: state,
-            mintNode: mintNode,
+            mintNode: mintNode
         };
         /* Dev */
         // _DevLogger_("GENERATE", "mIf", mIfInstance._mIf);
@@ -2012,7 +1998,7 @@ var mint = (function (exports) {
                 parentBlueprint,
                 _rootScope,
                 content,
-                isSVG,
+                isSVG
             });
             /* Dev */
             // _DevLogger_("GENERATE", "mIf", that.blueprint, parentBlueprint);
@@ -2053,7 +2039,7 @@ var mint = (function (exports) {
             scope,
             parentBlueprint,
             _rootScope,
-            isSVG,
+            isSVG
         });
         // ** We need to replace this previous IfBlueprint as its not longer the correct context.
         if (parentBlueprint !== null) {
@@ -2093,10 +2079,7 @@ var mint = (function (exports) {
         }
         mIf.blueprinted = true;
         const { blueprintList, blueprintIndex } = getBlueprintIndex(newBlueprint);
-        parentElement !== undefined &&
-            renderBlueprints([newBlueprint], parentElement, blueprintList, [
-                blueprintIndex,
-            ]);
+        parentElement !== undefined && renderBlueprints([newBlueprint], parentElement, blueprintList, [blueprintIndex]);
         return { newState, newlyInserted };
     };
     const fromFalseToTrue = (blueprint, parentElement, parentBlueprintList, blueprintIndex) => {
@@ -2106,13 +2089,16 @@ var mint = (function (exports) {
         }
         if (collection !== undefined) {
             for (let x of collection) {
-                renderBlueprints([x], parentElement, parentBlueprintList, [
-                    blueprintIndex,
-                ]);
+                renderBlueprints([x], parentElement, parentBlueprintList, [blueprintIndex]);
             }
         }
     };
     const fromTrueToFalse = (blueprint) => {
+        var _a;
+        const { isComponent, scope } = blueprint;
+        if (isComponent) {
+            (_a = scope.onremove) === null || _a === void 0 ? void 0 : _a.call(scope, { scope });
+        }
         removeList([blueprint]);
     };
     const stateShift = (blueprint, parentElement, parentBlueprintList, blueprintIndex, mIf) => {
@@ -2135,7 +2121,7 @@ var mint = (function (exports) {
                     return fromFalseNotBlueprintedToTrue(blueprint, parentElement, {
                         mIf,
                         newState,
-                        newlyInserted,
+                        newlyInserted
                     });
                 }
                 else {
@@ -2403,7 +2389,7 @@ var mint = (function (exports) {
 
     const handleErrorsAndWarnings = (blueprint, mFor) => {
         var _a, _b;
-        const { nodeToClone, orderedProps, props, forListBlueprints, parentBlueprint, _rootScope, isSVG, } = blueprint;
+        const { nodeToClone, orderedProps, props, forListBlueprints, parentBlueprint, _rootScope, isSVG } = blueprint;
         const { blueprintIndex } = getBlueprintIndex(blueprint);
         const childBlueprints = (_a = parentBlueprint === null || parentBlueprint === void 0 ? void 0 : parentBlueprint.childBlueprints) !== null && _a !== void 0 ? _a : _rootScope._rootChildBlueprints;
         const parentScope = (_b = parentBlueprint === null || parentBlueprint === void 0 ? void 0 : parentBlueprint.scope) !== null && _b !== void 0 ? _b : _rootScope;
@@ -2444,7 +2430,7 @@ var mint = (function (exports) {
             childBlueprints,
             parentBlueprint,
             _rootScope,
-            isSVG,
+            isSVG
         };
     };
     const changeElementPosition = (forRender, requiredIndex, forRenders, allElements, options) => {
@@ -2484,8 +2470,8 @@ var mint = (function (exports) {
         }
     };
     const refreshMFor = (blueprint, { _mFor, newlyInserted }) => {
-        var _a;
-        const { forKey, forData, blueprintIndex, parentElement, nodeToClone, orderedProps, props, parentScope, parentBlueprint, forListBlueprints, childBlueprints, _rootScope, isSVG, } = handleErrorsAndWarnings(blueprint, _mFor);
+        var _a, _b, _c;
+        const { forKey, forData, blueprintIndex, parentElement, nodeToClone, orderedProps, props, parentScope, parentBlueprint, forListBlueprints, childBlueprints, _rootScope, isSVG } = handleErrorsAndWarnings(blueprint, _mFor);
         _mFor.forData = forData;
         const newList = forData;
         _mFor.oldForDataLength = newList.length;
@@ -2531,7 +2517,7 @@ var mint = (function (exports) {
                 forRenders.push(x);
             }
             else {
-                forRenders.push(generatemForBlueprint(nodeToClone, parentScope, orderedProps, props, nodeToClone.content, parentBlueprint, x, i, _rootScope, isSVG));
+                forRenders.push(generatemForBlueprint(nodeToClone, parentScope, orderedProps, props, _mFor._children, parentBlueprint, x, i, _rootScope, isSVG));
             }
         }
         _mFor.currentForRenders = forRenders;
@@ -2549,12 +2535,18 @@ var mint = (function (exports) {
         }
         // ** Cycle through old list and if its not on the new list then remove this element.
         for (let currentRender of forListBlueprints) {
-            if (!newCurrentForRenders.includes(currentRender) &&
-                currentRender instanceof ElementBlueprint) {
-                const element = currentRender.element;
-                (_a = element === null || element === void 0 ? void 0 : element.parentElement) === null || _a === void 0 ? void 0 : _a.removeChild(element);
+            if (!newCurrentForRenders.includes(currentRender)) {
+                if (!currentRender.fragment) {
+                    const element = currentRender.element;
+                    (_a = element === null || element === void 0 ? void 0 : element.parentElement) === null || _a === void 0 ? void 0 : _a.removeChild(element);
+                }
+                else {
+                    const collection = currentRender.collection;
+                    removeList(collection);
+                }
             }
         }
+        // ** Cycle through new list and if its not on the old list then add this element.
         for (let targetRender of forRenders) {
             if (!forListBlueprints.includes(targetRender)) {
                 const element = targetRender.element;
@@ -2568,12 +2560,11 @@ var mint = (function (exports) {
             if (mintNode === null)
                 continue;
             if (!forListBlueprints.includes(targetRender)) {
-                mintNode.render(targetRender, parentElement, childBlueprints, blueprintIndex);
+                (_b = mintNode.render) === null || _b === void 0 ? void 0 : _b.call(mintNode, targetRender, parentElement, childBlueprints, blueprintIndex);
             }
             else {
-                const _refresh = mintNode.refresh;
-                _refresh(targetRender, parentElement, {
-                    newlyInserted,
+                (_c = mintNode.refresh) === null || _c === void 0 ? void 0 : _c.call(mintNode, targetRender, parentElement, {
+                    newlyInserted
                 });
             }
         }
@@ -2588,15 +2579,15 @@ var mint = (function (exports) {
         rearrangeElements(forRenders, {
             childBlueprints,
             parentElement,
-            blueprintIndex,
+            blueprintIndex
         });
         return {
             condition: true,
-            value: blueprint,
+            value: blueprint
         };
     };
 
-    const createmForObject = ({ forKey, forValue, mForType, nodeToClone, _children, parentScope, orderedProps, props, parentBlueprint, _rootScope, isSVG, }) => {
+    const createmForObject = ({ forKey, forValue, mForType, nodeToClone, _children, parentScope, orderedProps, props, parentBlueprint, _rootScope, isSVG }) => {
         const initialForData = resolvePropertyLookup(forValue, parentScope);
         if (!(initialForData instanceof Array) || initialForData === undefined) {
             throw new Error(`${MINT_ERROR} Must pass in an Array or undefined to mFor (mFor: "${forValue}")`);
@@ -2628,9 +2619,10 @@ var mint = (function (exports) {
             currentForRenders,
             oldForDataLength: forData.length,
             mForType,
+            _children
         };
     };
-    const generateMFor = ({ mForInstance, forValue, node, orderedProps, props, _children, parentScope, parentBlueprint, _rootScope, isSVG, }) => {
+    const generateMFor = ({ mForInstance, forValue, node, orderedProps, props, _children, parentScope, parentBlueprint, _rootScope, isSVG }) => {
         var _a;
         const nodeToClone = node.mintNode;
         if (mForInstance.generated)
@@ -2674,7 +2666,7 @@ var mint = (function (exports) {
             props,
             parentBlueprint,
             _rootScope,
-            isSVG,
+            isSVG
         });
         const forListBlueprints = mForInstance._mFor.currentForRenders;
         const runRefresh = (blueprint, options) => {
@@ -2693,11 +2685,11 @@ var mint = (function (exports) {
             _rootScope,
             forListBlueprints,
             // collection: collection as Array<Blueprint>,
-            isSVG: isSVG || undefined,
+            isSVG: isSVG || undefined
         });
         return {
             condition: true,
-            value: mForInstance.blueprint,
+            value: mForInstance.blueprint
         };
     };
 
@@ -2803,6 +2795,87 @@ var mint = (function (exports) {
         return { mRef: new MintRef(refValue) };
     };
 
+    class MintProps extends MintAttribute {
+        constructor(exceptions = []) {
+            super(() => new MintProps(exceptions));
+            this.onGenerate = function (options) {
+                const { scope, parentBlueprint } = options;
+                // ** We only want to do something if the parentBlueprint exists.
+                if (parentBlueprint !== null && parentBlueprint.props !== undefined) {
+                    // ** Here we take a copy of the parent props.
+                    const exceptedParentProps = Object.assign({}, parentBlueprint.props);
+                    // ** We then remove the props we have on our provided list of exceptions.
+                    for (let item of exceptions) {
+                        delete exceptedParentProps[item];
+                    }
+                    // ** Here we assign the parent props on to this Node.
+                    assignProps(scope, Object.keys(exceptedParentProps), exceptedParentProps, parentBlueprint.scope);
+                }
+                return {
+                    condition: false
+                };
+            };
+            this.onRefresh = function (options) {
+                const { scope, parentBlueprint } = options;
+                // ** We only want to do something if the parentBlueprint exists.
+                if (parentBlueprint !== null && parentBlueprint.props !== undefined) {
+                    // ** Here we take a copy of the parent props.
+                    const exceptedParentProps = Object.assign({}, parentBlueprint.props);
+                    // ** We then remove the props we have on our provided list of exceptions.
+                    for (let item of exceptions) {
+                        delete exceptedParentProps[item];
+                    }
+                    // ** Here we assign the parent props on to this Node.
+                    assignProps(scope, Object.keys(exceptedParentProps), exceptedParentProps, parentBlueprint.scope);
+                }
+                return {
+                    condition: false
+                };
+            };
+        }
+    }
+
+    const mProps = (exceptions = []) => {
+        return { mProps: new MintProps(exceptions) };
+    };
+
+    class Store {
+        constructor(initialData) {
+            if (!(initialData instanceof Object)) {
+                throw "You must provide an Object to create a new Store.";
+            }
+            const entries = Object.entries(initialData);
+            for (let [key, value] of entries) {
+                if (value instanceof ScopeTransformer) {
+                    value.transform(this, key);
+                }
+                else {
+                    this[key] = value;
+                }
+            }
+            this._component = null;
+            this._keys = Object.keys(initialData);
+            this._data = initialData;
+            Object.seal(this);
+        }
+        connect(scope) {
+            this._component = scope;
+            scope._store = this;
+            for (let key of this._keys) {
+                const value = this._data[key];
+                if (value instanceof ScopeTransformer) {
+                    value.transform(scope, key);
+                }
+                else {
+                    Object.defineProperty(scope, key, {
+                        get: () => this[key],
+                        set: (_value) => (this[key] = _value),
+                    });
+                }
+            }
+        }
+    }
+
     const _get = (target, value) => {
         let output = target;
         const trail = value.split(".");
@@ -2903,6 +2976,7 @@ var mint = (function (exports) {
     exports.mExtend = mExtend;
     exports.mFor = mFor;
     exports.mIf = mIf;
+    exports.mProps = mProps;
     exports.mRef = mRef;
     exports.node = node;
     exports.refresh = externalRefresh;
