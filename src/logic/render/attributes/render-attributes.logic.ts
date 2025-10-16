@@ -3,6 +3,8 @@ import { renderBindingAttributes } from "./render-binding-attributes.logic";
 import { renderStringAttribute } from "./render-string-attribute.logic";
 import { isAttrType } from "../../common/is-attr-type.logic";
 
+import { Blueprint } from "../../../models/blueprint/Blueprint.model";
+
 import { IAttributes } from "../../../interfaces/IAttributes.interface";
 
 import { attributesToIgnore } from "../../../data/mint-attributes.data";
@@ -11,7 +13,6 @@ import { MINT_ERROR } from "../../../data/constants.data";
 import { TElement } from "../../../types/TElement.type";
 
 import { _DevLogger_ } from "../../../_DEV_/_DevLogger_";
-import { Blueprint } from "../../../models/blueprint/Blueprint.model";
 
 const setAttribute = (
   element: TElement,
@@ -19,7 +20,7 @@ const setAttribute = (
   value: string,
   orderedAttributes: Array<string>,
   attributes: IAttributes,
-  scope: Object
+  scope: Object,
 ) => {
   /* Dev */
   // _DevLogger_("RENDER", "SETATTRIBUTE", key, "|", value, [element]);
@@ -49,14 +50,14 @@ export const renderAttributes = (
   // orderedAttributes: null | Array<string>,
   // attributes: IAttributes,
   // scope: Object
-  blueprint: Blueprint
+  blueprint: Blueprint,
 ) => {
   const { orderedAttributes, attributes, scope } = blueprint;
 
   const element = blueprint.element as TElement;
 
   /* DEV */
-  // _DevLogger_("RENDER", "ATTRIBUTES", orderedAttributes, { element });
+  // _DevLogger_("RENDER", "ATTRIBUTES", orderedAttributes, blueprint);
 
   if (attributes === undefined || orderedAttributes === null) return;
 

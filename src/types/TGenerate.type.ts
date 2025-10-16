@@ -15,5 +15,5 @@ export type TGenerate = (options: {
   parentBlueprint: null | TParentBlueprint;
   _rootScope: IRootScope;
   isSVG: boolean;
-  useGivenScope?: boolean;
+  useGivenScope?: IMainScope;
 }) => Blueprint;

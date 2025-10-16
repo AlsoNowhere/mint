@@ -7,12 +7,7 @@ import { isAttrType } from "./is-attr-type.logic";
 import { IProps } from "../../interfaces/IProps.interface";
 import { IMainScope } from "../../interfaces/IMainScope.interface";
 
-const handleResolverProperties = (
-  scope: IMainScope,
-  key: string,
-  value: string,
-  parentScope: IMainScope
-) => {
+const handleResolverProperties = (scope: IMainScope, key: string, value: string, parentScope: IMainScope) => {
   const getter = resolverGetter(value, parentScope);
   if (getter instanceof Function) {
     // ** If getter is undefined it means that this property is a getter, therefore created by the Resolver Object.
@@ -33,26 +28,14 @@ const handleResolverProperties = (
   }
 };
 
-const bindingTemplateProp = (
-  scope: IMainScope,
-  key: string,
-  value: string,
-  parentScope: IMainScope
-) => {
-  if (key !== "scope") {
-    handleResolverProperties(scope, key, value, parentScope);
-    return;
-  }
+const bindingTemplateProp = (scope: IMainScope, key: string, value: string, parentScope: IMainScope) => {
+  if (key === "scope") return;
+  handleResolverProperties(scope, key, value, parentScope);
 };
 
 // ** When a Component is defined, props are provided to it.
 // ** Here we take those props and assign their values from the parent scope to this Component.
-export const assignProps = (
-  scope: IMainScope,
-  orderedProps: Array<string>,
-  props: IProps,
-  parentScope: IMainScope
-) => {
+export const assignProps = (scope: IMainScope, orderedProps: Array<string>, props: IProps, parentScope: IMainScope) => {
   for (let key of orderedProps) {
     const value = props[key];
 
@@ -63,11 +46,7 @@ export const assignProps = (
       const descriptors = Object.getOwnPropertyDescriptor(scope, key);
 
       // ** We do not want to try to assign to a property that only has a getter. Check for that here.
-      if (
-        descriptors !== undefined &&
-        descriptors.get !== undefined &&
-        descriptors.set === undefined
-      ) {
+      if (descriptors !== undefined && descriptors.get !== undefined && descriptors.set === undefined) {
         return;
       }
 

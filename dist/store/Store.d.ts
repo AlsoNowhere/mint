@@ -1,6 +1,6 @@
 import { IScope } from "../interfaces/IScope.interface";
 import { IStore } from "../interfaces/IStore.interface";
-export declare abstract class Store implements IStore {
+export declare class Store implements IStore {
     _component: IScope | null;
     private _keys;
     private _data;

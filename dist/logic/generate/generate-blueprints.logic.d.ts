@@ -9,5 +9,5 @@ export declare const generateBlueprints: ({ nodes, scope, parentBlueprint, _root
     parentBlueprint: TParentBlueprint | null;
     _rootScope: IRootScope;
     isSVG?: boolean | undefined;
-    useGivenScope?: boolean | undefined;
+    useGivenScope?: IMainScope | undefined;
 }) => Array<Blueprint>;

@@ -7,22 +7,12 @@ import { TRender } from "../../types/TRender.type";
 
 import { _DevLogger_ } from "../../_DEV_/_DevLogger_";
 
-const renderBlueprint: TRender = (
-  blueprint,
-  parentElement,
-  parentChildBlueprints,
-  blueprintIndex
-): void => {
+const renderBlueprint: TRender = (blueprint, parentElement, parentChildBlueprints, blueprintIndex): void => {
   /* DEV */
   // _DevLogger_("RENDER", "Blueprint", blueprint);
 
   {
-    const shouldReturn = resolveMAttributesOnRender(
-      blueprint,
-      parentElement,
-      parentChildBlueprints,
-      blueprintIndex
-    );
+    const shouldReturn = resolveMAttributesOnRender(blueprint, parentElement, parentChildBlueprints, blueprintIndex);
 
     if (shouldReturn.condition) {
       return;
@@ -38,36 +28,21 @@ const renderBlueprint: TRender = (
         indexes.push(i);
         i++;
       }
-      renderBlueprints(
-        collection,
-        parentElement,
-        parentChildBlueprints,
-        indexes
-      );
+      renderBlueprints(collection, parentElement, parentChildBlueprints, indexes);
     }
     return;
   }
 
-  blueprint.mintNode.render(
-    blueprint,
-    parentElement,
-    parentChildBlueprints,
-    blueprintIndex
-  );
+  blueprint.mintNode.render?.(blueprint, parentElement, parentChildBlueprints, blueprintIndex);
 };
 
 export const renderBlueprints = (
   blueprints: Array<Blueprint>,
   parentElement: TElement,
   parentChildBlueprints: Array<Blueprint> = blueprints,
-  indexes?: Array<number>
+  indexes?: Array<number>,
 ) => {
   for (let [index, blueprint] of blueprints.entries()) {
-    renderBlueprint(
-      blueprint,
-      parentElement,
-      parentChildBlueprints,
-      !!indexes ? indexes[index] : index
-    );
+    renderBlueprint(blueprint, parentElement, parentChildBlueprints, !!indexes ? indexes[index] : index);
   }
 };

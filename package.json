@@ -1,6 +1,6 @@
 {
   "name": "mint",
-  "version": "3.0.3",
+  "version": "3.0.4",
   "description": "",
   "main": "./dist/mint.js",
   "scripts": {

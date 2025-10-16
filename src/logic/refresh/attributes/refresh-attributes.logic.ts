@@ -11,12 +11,7 @@ import { TElement } from "../../../types/TElement.type";
 
 import { _DevLogger_ } from "../../../_DEV_/_DevLogger_";
 
-const setAttribute = (
-  element: TElement,
-  key: string,
-  value: string,
-  scope: Object
-) => {
+const setAttribute = (element: TElement, key: string, value: string, scope: Object) => {
   /* Dev */
   // _DevLogger_("REFRESH", "SETATTRIBUTE: ", key, "|", value);
 
@@ -35,7 +30,7 @@ export const refreshAttributes = (
   element: TElement,
   orderedAttributes: Array<string>,
   attributes: IAttributes,
-  scope: IMainScope
+  scope: IMainScope,
 ) => {
   /* DEV */
   // _DevLogger_("REFRESH", "ATTRIBUTES: ", orderedAttributes, { element });

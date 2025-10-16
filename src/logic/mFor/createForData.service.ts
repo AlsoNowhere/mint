@@ -1,4 +1,4 @@
-import { IForData } from "../interfaces/IForData.interface";
+import { IForData } from "../../interfaces/IForData.interface";
 
 /*
   This is a very important Function.
@@ -10,11 +10,7 @@ import { IForData } from "../interfaces/IForData.interface";
   leaving the parent scope with the last Array property value and with each in the for
   using that property too.
 */
-export const createForData = (
-  data: Object | string | number,
-  scope: Object,
-  index: number
-): IForData => {
+export const createForData = (data: Object | string | number, scope: Object, index: number): IForData => {
   const Data = function _ForData() {
     this._x = data;
     this._i = index;

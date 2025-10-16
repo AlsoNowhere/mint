@@ -8,16 +8,6 @@ export const global = {
 
 export const attributesThatAreBoolean = ["checked"];
 
-export const attributesThatAreProperties = [
-  "checked",
-  "value",
-  "textContent",
-  "innerHTML",
-];
+export const attributesThatAreProperties = ["checked", "value", "textContent", "innerHTML"];
 
-export const forScopePermantProperties = [
-  "_x",
-  "_i",
-  "mintElement_index",
-  "_mintBlueprint",
-];
+export const forScopePermanentProperties = ["_x", "_i", "mintElement_index", "_mintBlueprint"];

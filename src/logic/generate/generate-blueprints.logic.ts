@@ -15,14 +15,7 @@ import { MINT_ERROR } from "../../data/constants.data";
 import { TParentBlueprint } from "../../types/TParentBlueprint.type";
 import { TGenerate } from "../../types/TGenerate.type";
 
-const generateBlueprint: TGenerate = ({
-  node,
-  parentBlueprint,
-  scope,
-  _rootScope,
-  isSVG,
-  useGivenScope,
-}) => {
+const generateBlueprint: TGenerate = ({ node, parentBlueprint, scope, _rootScope, isSVG, useGivenScope }) => {
   fixProps(node.props);
 
   const props = cloneProps({ props: node.props ?? {} });
@@ -59,20 +52,18 @@ export const generateBlueprints = ({
   parentBlueprint,
   _rootScope,
   isSVG = false,
-  useGivenScope = false,
+  useGivenScope,
 }: {
   nodes: Array<INode>;
   scope: IMainScope;
   parentBlueprint: TParentBlueprint | null;
   _rootScope: IRootScope;
   isSVG?: boolean;
-  useGivenScope?: boolean;
+  useGivenScope?: IMainScope;
 }): Array<Blueprint> => {
   // <@ REMOVE FOR PRODUCTION
   if (nodes.find((x) => !(x instanceof CreateNode))) {
-    throw new Error(
-      `${MINT_ERROR} generateBlueprints -- nodes sent not correctly implemented.`
-    );
+    throw new Error(`${MINT_ERROR} generateBlueprints -- nodes sent not correctly implemented.`);
   }
   // @>
 
@@ -89,7 +80,7 @@ export const generateBlueprints = ({
         _rootScope,
         isSVG,
         useGivenScope,
-      })
+      }),
     );
   }
 
