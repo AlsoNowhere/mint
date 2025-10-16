@@ -7,6 +7,7 @@ import { getParentElement } from "../common/get-parent-element.logic";
 import { resolvePropertyLookup } from "../../services/resolve-property-lookup.logic";
 import { generatemForBlueprint } from "./common/generate-for-blueprint.logic";
 import { getBlueprintIndex } from "../common/get-blueprint-index.logic";
+import { removeList } from "../common/remove-list.logic";
 
 import { Blueprint } from "../../models/blueprint/Blueprint.model";
 import { ForBlueprint } from "../../models/blueprint/ForBlueprint.model";
@@ -24,7 +25,6 @@ import { TShouldExit } from "../../types/TShouldExit.type";
 import { FOR_Type } from "../../enum/FOR_Type.enum";
 
 import { _DevLogger_ } from "../../_DEV_/_DevLogger_";
-import { removeList } from "../common/remove-list.logic";
 
 type AddElementsOptions = {
   childBlueprints: Array<Blueprint>;
@@ -67,7 +67,7 @@ const handleErrorsAndWarnings = (blueprint: ForBlueprint, mFor: I_mFor) => {
   // ** Duplicates won't cause errors but we warn the user because its isn't expected.
   if (protoForData.length !== forData.length) {
     console.warn(
-      `mFor -- duplicate elements detected. Only one instance will be rendered. Check mKey value. ${forKey}`
+      `mFor -- duplicate elements detected. Only one instance will be rendered. Check mKey value. ${forKey}`,
     );
   }
 
@@ -86,7 +86,7 @@ const handleErrorsAndWarnings = (blueprint: ForBlueprint, mFor: I_mFor) => {
     childBlueprints,
     parentBlueprint,
     _rootScope,
-    isSVG
+    isSVG,
   };
 };
 
@@ -95,7 +95,7 @@ const changeElementPosition = (
   requiredIndex: number,
   forRenders: Array<ElementBlueprint | ComponentBlueprint>,
   allElements: Array<TElement>,
-  options: AddElementsOptions
+  options: AddElementsOptions,
 ) => {
   const element = forRender.element;
   if (element === undefined) return;
@@ -135,7 +135,7 @@ const rearrangeElements = (forRenders: Array<ElementBlueprint | ComponentBluepri
 
 export const refreshMFor = (
   blueprint: ForBlueprint,
-  { _mFor, newlyInserted }: { _mFor: I_mFor; newlyInserted: boolean }
+  { _mFor, newlyInserted }: { _mFor: I_mFor; newlyInserted: boolean },
 ) => {
   const {
     forKey,
@@ -150,7 +150,7 @@ export const refreshMFor = (
     forListBlueprints,
     childBlueprints,
     _rootScope,
-    isSVG
+    isSVG,
   } = handleErrorsAndWarnings(blueprint, _mFor);
 
   _mFor.forData = forData;
@@ -206,15 +206,14 @@ export const refreshMFor = (
         generatemForBlueprint(
           nodeToClone,
           parentScope,
-          orderedProps,
           props,
           _mFor._children,
           parentBlueprint,
           x,
           i,
           _rootScope,
-          isSVG
-        )
+          isSVG,
+        ),
       );
     }
   }
@@ -263,7 +262,7 @@ export const refreshMFor = (
       mintNode.render?.(targetRender as Blueprint, parentElement, childBlueprints, blueprintIndex);
     } else {
       mintNode.refresh?.(targetRender as Blueprint, parentElement, {
-        newlyInserted
+        newlyInserted,
       });
     }
   }
@@ -280,11 +279,11 @@ export const refreshMFor = (
   rearrangeElements(forRenders, {
     childBlueprints,
     parentElement,
-    blueprintIndex
+    blueprintIndex,
   });
 
   return {
     condition: true,
-    value: blueprint
+    value: blueprint,
   } as TShouldExit;
 };

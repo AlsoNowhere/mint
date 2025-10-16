@@ -8,4 +8,4 @@ import { INode } from "../../../interfaces/INode.interface";
 import { IProps } from "../../../interfaces/IProps.interface";
 import { IRootScope } from "../../../interfaces/IRootScope.interface";
 import { TParentBlueprint } from "../../../types/TParentBlueprint.type";
-export declare const generatemForBlueprint: (nodeToClone: MintElement | MintComponent, scope: IMainScope, orderedProps: Array<string>, props: IProps, _children: null | Array<INode>, parentBlueprint: null | TParentBlueprint, data: Blueprint | Object | string | number, index: number, _rootScope: IRootScope, isSVG?: boolean) => ElementBlueprint | ComponentBlueprint;
+export declare const generatemForBlueprint: (nodeToClone: MintElement | MintComponent, parentScope: IMainScope, props: IProps, _children: null | Array<INode>, parentBlueprint: null | TParentBlueprint, data: Blueprint | Object | string | number, index: number, _rootScope: IRootScope, isSVG?: boolean) => ComponentBlueprint | ElementBlueprint;

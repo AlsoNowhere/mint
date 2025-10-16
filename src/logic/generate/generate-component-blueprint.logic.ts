@@ -34,14 +34,14 @@ export const generateComponentBlueprint: TGenerate = ({
   parentBlueprint,
   _rootScope,
   isSVG,
-  useGivenScope
+  useGivenScope,
 }) => {
   const { mintNode, content: _children } = node;
   fixProps((mintNode as MintComponent).attributes);
   const mintComponent = mintNode as MintComponent;
   const { element, content } = mintComponent;
   const attributes: IAttributes = cloneProps({
-    props: mintComponent.attributes
+    props: mintComponent.attributes,
   });
 
   const orderedAttributes = resolvePropsOrder(attributes);
@@ -49,7 +49,7 @@ export const generateComponentBlueprint: TGenerate = ({
   // <@ REMOVE FOR PRODUCTION
   if (!(mintComponent.scope instanceof Function) && mintComponent.scope !== null) {
     throw new Error(
-      `${MINT_ERROR} Mint Component -- scope -- must pass a constructor function for Component scope argument (second argument) i.e component("div", function(){}`
+      `${MINT_ERROR} Mint Component -- scope -- must pass a constructor function for Component scope argument (second argument) i.e component("div", function(){}`,
     );
   }
   // @>
@@ -61,8 +61,8 @@ export const generateComponentBlueprint: TGenerate = ({
     throw new Error(
       `${MINT_ERROR} Element sent to node() contains angle brackets "${element}". Use "${element.substring(
         1,
-        element.length - 1
-      )}" instead.`
+        element.length - 1,
+      )}" instead.`,
     );
   }
   // @>
@@ -78,18 +78,16 @@ export const generateComponentBlueprint: TGenerate = ({
   }
 
   // ** Create the new Component's scope.
-  let componentScope: IScope;
-  if (useGivenScope) {
-    // ** When mFor is looped over a Component an extra layer of scope is added.
-    // ** In order to get the original Component we must do it manually here.
-    componentScope = parentScope as IScope;
-  } else {
-    componentScope = new (mintComponent.scope ?? MintScope)();
-    // ** Certain props are ScopeTransformer objects and apply their values differently
-    // ** to the Component.
-    // ** We handle that here.
-    applyScopeTransformers(componentScope);
+  const componentScope: IScope = new (mintComponent.scope ?? MintScope)();
+
+  // ** If we are bolting on another scope (for example when using mFor) do that here.
+  if (!!useGivenScope) {
+    Object.assign(componentScope, useGivenScope);
   }
+
+  // ** Certain props are ScopeTransformer objects and apply their values differently to the Component.
+  // ** We handle that here.
+  applyScopeTransformers(componentScope);
 
   // ** Here we check for app level Component Resolvers.
   // ** These are things that are run against the Component.
@@ -100,11 +98,9 @@ export const generateComponentBlueprint: TGenerate = ({
     }
   }
 
-  if (!useGivenScope) {
-    // ** When a Component is defined, props are provided to it.
-    // ** Here we take those props and assign their values from the parent scope to this Component.
-    assignProps(componentScope, orderedProps ?? [], props ?? {}, parentScope);
-  }
+  // ** When a Component is defined, props are provided to it.
+  // ** Here we take those props and assign their values from the parent scope to this Component.
+  assignProps(componentScope, orderedProps ?? [], props ?? {}, parentScope);
 
   const commonValues = {
     node,
@@ -115,7 +111,7 @@ export const generateComponentBlueprint: TGenerate = ({
     parentBlueprint,
     _rootScope,
     isSVG,
-    isComponent: true
+    isComponent: true,
   };
 
   {
@@ -125,7 +121,7 @@ export const generateComponentBlueprint: TGenerate = ({
       orderedProps: orderedProps ?? [],
       props: props ?? {},
       isAttribute: false,
-      ...commonValues
+      ...commonValues,
     });
     if (shouldReturn.condition) {
       return shouldReturn.value as Blueprint;
@@ -139,7 +135,7 @@ export const generateComponentBlueprint: TGenerate = ({
       orderedProps: orderedAttributes,
       props: attributes,
       isAttribute: true,
-      ...commonValues
+      ...commonValues,
     });
     if (shouldReturn.condition) {
       return shouldReturn.value as Blueprint;
@@ -162,7 +158,7 @@ export const generateComponentBlueprint: TGenerate = ({
     attributes,
     scope: componentScope,
     parentBlueprint,
-    _rootScope
+    _rootScope,
   });
 
   if (!!_children) {
@@ -188,7 +184,7 @@ export const generateComponentBlueprint: TGenerate = ({
     scope: componentScope,
     parentBlueprint: blueprint,
     _rootScope,
-    isSVG
+    isSVG,
   });
 
   // ** Check if the children content contains the "_children" keyword.

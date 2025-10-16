@@ -2,10 +2,7 @@ import { deBracer } from "../../../services/deBracer.service";
 
 import { resolvePropertyLookup } from "../../../services/resolve-property-lookup.logic";
 
-import {
-  attributesThatAreBoolean,
-  attributesThatAreProperties,
-} from "../../../data/constants.data";
+import { attributesThatAreBoolean, attributesThatAreProperties } from "../../../data/constants.data";
 
 import { TElement } from "../../../types/TElement.type";
 
@@ -16,17 +13,11 @@ const getOldValue = (target: string, element: TElement) => {
   return element.getAttribute(target);
 };
 
-export const refreshBindingAttributes = (
-  element: TElement,
-  key: string,
-  value: string,
-  scope: Object
-): void => {
+export const refreshBindingAttributes = (element: TElement, key: string, property: string, scope: Object): void => {
   const target = key.substring(1, key.length - 1);
   const oldAttributeValue = getOldValue(target, element);
-  const _value = resolvePropertyLookup(value, scope);
-  const newAttributeValue =
-    _value instanceof Function ? _value.apply(scope) : _value;
+  const _value = resolvePropertyLookup(property, scope);
+  const newAttributeValue = _value instanceof Function ? _value.apply(scope) : _value;
 
   if (oldAttributeValue === newAttributeValue) {
     return;
@@ -68,9 +59,6 @@ export const refreshBindingAttributes = (
   } else if (newAttributeValue === undefined || newAttributeValue === null) {
     element.removeAttribute(target);
   } else {
-    element.setAttribute(
-      target,
-      deBracer(newAttributeValue, scope, "Refresh - binding attribute")
-    );
+    element.setAttribute(target, deBracer(newAttributeValue, scope, "Refresh - binding attribute"));
   }
 };

@@ -20,6 +20,7 @@ export const generateElementBlueprint: TGenerate = ({
   parentBlueprint,
   _rootScope,
   isSVG,
+  useGivenScope,
 }) => {
   // ** This Function can only be accessed  by MintElement so tell TS that here.
   const mintElement = node.mintNode as MintElement;
@@ -52,7 +53,7 @@ export const generateElementBlueprint: TGenerate = ({
       htmlElement: newHTMLElement,
       node,
       parentScope: scope,
-      scope,
+      scope: useGivenScope ?? scope,
       _children: null,
       parentBlueprint,
       _rootScope,
@@ -71,7 +72,7 @@ export const generateElementBlueprint: TGenerate = ({
     element: newHTMLElement,
     orderedAttributes: orderedAttributes ?? [],
     attributes: attributes ?? {},
-    scope,
+    scope: useGivenScope ?? scope,
     parentBlueprint,
     _rootScope,
   });
@@ -86,11 +87,11 @@ export const generateElementBlueprint: TGenerate = ({
     _childBlueprints.push(
       ...generateBlueprints({
         nodes: content,
-        scope,
+        scope: useGivenScope ?? scope,
         parentBlueprint: blueprint,
         _rootScope,
         isSVG,
-      })
+      }),
     );
   }
 
@@ -107,11 +108,7 @@ export const generateElementBlueprint: TGenerate = ({
       <div>Content</div>
     </main>
   */
-  const childBlueprints = resolveChildBlueprints(
-    blueprint,
-    _childBlueprints,
-    isSVG
-  );
+  const childBlueprints = resolveChildBlueprints(blueprint, _childBlueprints, isSVG);
 
   if (element === "<>") {
     blueprint.collection = childBlueprints;

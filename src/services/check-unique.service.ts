@@ -7,12 +7,24 @@ export const checkUniqueService = (key: string) => {
     // ** When using the index we ignore checking for uniqueness because it will always be unique.
     if (key === "_i") return true;
 
-    const value = item[key];
+    let value;
+    if (key === "_x") {
+      value = item;
+    } else {
+      value = item[key];
+    }
 
     {
       for (let [i, x] of arr.entries()) {
+        let forValue;
+        if (key === "_x") {
+          forValue = x;
+        } else {
+          forValue = x[key];
+        }
+
         // ** Find the first value on the arr that matches the provided value.
-        if (x[key] === value) {
+        if (forValue === value) {
           // ** If they are at the same index then alls fine.
           if (index === i) {
             return true;

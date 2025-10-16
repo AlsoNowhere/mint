@@ -5,4 +5,4 @@ export declare const global: {
 };
 export declare const attributesThatAreBoolean: string[];
 export declare const attributesThatAreProperties: string[];
-export declare const forScopePermantProperties: string[];
+export declare const forScopePermanentProperties: string[];

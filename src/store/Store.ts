@@ -3,7 +3,7 @@ import { ScopeTransformer } from "../models/scope-transformers/ScopeTransformer.
 import { IScope } from "../interfaces/IScope.interface";
 import { IStore } from "../interfaces/IStore.interface";
 
-export abstract class Store implements IStore {
+export class Store implements IStore {
   _component: IScope | null;
 
   private _keys: Array<string>;

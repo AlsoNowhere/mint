@@ -2,13 +2,9 @@ import { deBracer } from "../../../services/deBracer.service";
 
 import { TElement } from "../../../types/TElement.type";
 
-export const refreshStringAttribute = (
-  element: TElement,
-  key: string,
-  value: string,
-  scope: Object
-) => {
+export const refreshStringAttribute = (element: TElement, key: string, value: string, scope: Object) => {
   const oldAttributeValue = element.getAttribute(key);
+
 
   if (oldAttributeValue === value) {
     return;
@@ -19,11 +15,7 @@ export const refreshStringAttribute = (
   } else if (value === undefined) {
     element.removeAttribute(key);
   } else {
-    const newAttributeValue = deBracer(
-      value,
-      scope,
-      "Refresh - string attribute"
-    );
+    const newAttributeValue = deBracer(value, scope, "Refresh - string attribute");
     if (oldAttributeValue === newAttributeValue) {
       return;
     }

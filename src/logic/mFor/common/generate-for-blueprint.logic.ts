@@ -1,7 +1,5 @@
-import { createForData } from "../../../services/createForData.service";
+import { createForData } from "../createForData.service";
 
-import { applyScopeTransformers } from "../../common/apply-scope-transformers.logic";
-import { assignProps } from "../../common/assign-props.logic";
 import { generateBlueprints } from "../../generate/generate-blueprints.logic";
 
 import { Blueprint } from "../../../models/blueprint/Blueprint.model";
@@ -21,35 +19,26 @@ import { TParentBlueprint } from "../../../types/TParentBlueprint.type";
 
 export const generatemForBlueprint = (
   nodeToClone: MintElement | MintComponent,
-  scope: IMainScope,
-  orderedProps: Array<string>,
+  parentScope: IMainScope,
   props: IProps,
   _children: null | Array<INode>,
   parentBlueprint: null | TParentBlueprint,
   data: Blueprint | Object | string | number,
   index: number,
   _rootScope: IRootScope,
-  isSVG = false
+  isSVG = false,
 ) => {
-  if (data instanceof Blueprint)
-    return data as ElementBlueprint | ComponentBlueprint;
+  if (data instanceof Blueprint) return data as ElementBlueprint | ComponentBlueprint;
 
   let newScope: IMainScope;
 
   if (!!nodeToClone.scope) {
     newScope = new (nodeToClone.scope ?? MintScope)();
-    assignProps(newScope, orderedProps, props, scope);
   } else {
-    newScope = scope || new MintScope();
+    newScope = parentScope || new MintScope();
   }
-
-  applyScopeTransformers(newScope);
 
   const _scope = createForData(data, newScope, index);
-
-  if (!!nodeToClone.scope) {
-    assignProps(newScope, orderedProps, props, _scope);
-  }
 
   const mintElementClone = nodeToClone.clone();
   if (!!mintElementClone.attributes) {
@@ -58,11 +47,7 @@ export const generatemForBlueprint = (
     delete mintElementClone.attributes.mForType;
   }
 
-  const cloneMintNode = new CreateNode(
-    mintElementClone,
-    mintElementClone.attributes ?? null,
-    _children
-  );
+  const cloneMintNode = new CreateNode(mintElementClone, mintElementClone.attributes ?? null, _children);
   cloneMintNode.props = { ...props };
   delete cloneMintNode.props.mFor;
   delete cloneMintNode.props.mKey;
@@ -70,11 +55,11 @@ export const generatemForBlueprint = (
 
   const [blueprint] = generateBlueprints({
     nodes: [cloneMintNode],
-    scope: _scope,
+    scope: parentScope,
     parentBlueprint,
     _rootScope,
     isSVG,
-    useGivenScope: true,
+    useGivenScope: _scope,
   });
 
   return blueprint as ElementBlueprint | ComponentBlueprint;

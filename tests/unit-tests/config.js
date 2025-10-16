@@ -2,7 +2,7 @@ const config = {
   testEnvironment: "jsdom",
   verbose: true,
   testPathIgnorePatterns: [
-    "/node_modules/"
+    "/node_modules/",
 
     /*
 
@@ -94,9 +94,10 @@ const config = {
 
     // "./tests/unit-tests/mExtend/add-attributes",
 
-    // "./tests/unit-tests/mFor/components/data",
+    // "./tests/unit-tests/mFor/components/data-binding",
     // "./tests/unit-tests/mFor/components/loop-over-objects",
     // "./tests/unit-tests/mFor/components/loop-over-strings",
+    // "./tests/unit-tests/mFor/components/remove-component",
     // "./tests/unit-tests/mFor/components/that-has-children",
 
     // "./tests/unit-tests/mFor/moving-item/moving-end-to-start",
@@ -121,7 +122,7 @@ const config = {
     // "./tests/unit-tests/mFor/loop-over-strings",
     // "./tests/unit-tests/mFor/loop-over-with-events",
     // "./tests/unit-tests/mFor/mFor-with-siblings",
-    // "./tests/unit-tests/mFor/simple-list"
+    // "./tests/unit-tests/mFor/simple-list",
 
     // "./tests/unit-tests/mIf/refresh/change-false-to-true",
     // "./tests/unit-tests/mIf/refresh/change-true-to-false",
@@ -167,7 +168,7 @@ const config = {
     // "./tests/unit-tests/storylines/forms",
 
     // ** Always miss
-  ]
+  ],
 };
 
 module.exports = config;

@@ -1,8 +1,8 @@
 import { checkUniqueService } from "../../services/check-unique.service";
-import { removeFromOrderedAttributes } from "../../services/remove-from-ordered-attributes.service";
 
 import { resolvePropertyLookup } from "../../services/resolve-property-lookup.logic";
 import { generatemForBlueprint } from "./common/generate-for-blueprint.logic";
+import { refreshMFor } from "./refresh-mFor.logic";
 
 import { MintElement } from "../../models/mint-nodes/MintElement.model";
 import { MintComponent } from "../../models/mint-nodes/MintComponent.model";
@@ -23,10 +23,7 @@ import { FOR_Type } from "../../enum/FOR_Type.enum";
 
 import { TParentBlueprint } from "../../types/TParentBlueprint.type";
 import { TonGenerate } from "../../types/MintAttributes/TonGenerate.type";
-import { refreshBlueprints } from "../refresh/refresh-blueprints.logic";
 import { TRefresh } from "../../types/TRefresh.type";
-import { refreshMFor } from "./refresh-mFor.logic";
-import { getBlueprintIndex } from "../common/get-blueprint-index.logic";
 
 const createmForObject = ({
   forKey,
@@ -35,11 +32,10 @@ const createmForObject = ({
   nodeToClone,
   _children,
   parentScope,
-  orderedProps,
   props,
   parentBlueprint,
   _rootScope,
-  isSVG
+  isSVG,
 }: {
   forKey: string;
   mForType?: FOR_Type;
@@ -47,7 +43,6 @@ const createmForObject = ({
   nodeToClone: MintElement | MintComponent;
   _children: null | Array<INode>;
   parentScope: IMainScope;
-  orderedProps: Array<string>;
   props: IProps;
   parentBlueprint: null | TParentBlueprint;
   _rootScope: IRootScope;
@@ -72,25 +67,14 @@ const createmForObject = ({
   // ** Duplicates won't cause errors but we warn the user because its isn't expected.
   if (initialForData.length !== forData.length) {
     console.warn(
-      `mFor -- duplicate elements detected. Only one instance will be rendered. Check mKey value. ${forKey}`
+      `mFor -- duplicate elements detected. Only one instance will be rendered. Check mKey value. ${forKey}`,
     );
   }
 
   const currentForRenders: Array<ComponentBlueprint | ElementBlueprint> = [];
   for (let [i, x] of forData.entries()) {
     currentForRenders.push(
-      generatemForBlueprint(
-        nodeToClone,
-        parentScope,
-        orderedProps,
-        props,
-        _children,
-        parentBlueprint,
-        x,
-        i,
-        _rootScope,
-        isSVG
-      )
+      generatemForBlueprint(nodeToClone, parentScope, props, _children, parentBlueprint, x, i, _rootScope, isSVG),
     );
   }
 
@@ -103,7 +87,7 @@ const createmForObject = ({
     currentForRenders,
     oldForDataLength: forData.length,
     mForType,
-    _children
+    _children,
   };
 };
 
@@ -120,7 +104,7 @@ export const generateMFor: TonGenerate<{
   parentScope,
   parentBlueprint,
   _rootScope,
-  isSVG
+  isSVG,
 }) => {
   const nodeToClone = node.mintNode;
 
@@ -155,12 +139,6 @@ export const generateMFor: TonGenerate<{
 
   const mForType = props.mForType ?? FOR_Type.default;
 
-  // removeFromOrderedAttributes(orderedProps, props, [
-  //   "mFor",
-  //   "mKey",
-  //   "mForType",
-  // ]);
-
   mForInstance._mFor = createmForObject({
     forKey,
     forValue,
@@ -168,27 +146,23 @@ export const generateMFor: TonGenerate<{
     nodeToClone: nodeToClone as MintElement | MintComponent,
     _children,
     parentScope,
-    orderedProps,
     props,
     parentBlueprint,
     _rootScope,
-    isSVG
+    isSVG,
   });
 
   const forListBlueprints = mForInstance._mFor.currentForRenders;
 
   const runRefresh: TRefresh = (blueprint: ForBlueprint, options) => {
-    // refreshBlueprints(blueprint.forListBlueprints);
-
     refreshMFor(blueprint, {
       _mFor: mForInstance._mFor,
-      ...options
+      ...options,
     });
   };
 
   mForInstance.blueprint = new ForBlueprint({
     render: mForInstance.onRender,
-    // refresh: mForInstance.onRefresh,
     refresh: runRefresh,
     nodeToClone: nodeToClone as MintElement | MintComponent,
     orderedProps,
@@ -197,12 +171,11 @@ export const generateMFor: TonGenerate<{
     parentBlueprint,
     _rootScope,
     forListBlueprints,
-    // collection: collection as Array<Blueprint>,
-    isSVG: isSVG || undefined
+    isSVG: isSVG || undefined,
   });
 
   return {
     condition: true,
-    value: mForInstance.blueprint
+    value: mForInstance.blueprint,
   };
 };
